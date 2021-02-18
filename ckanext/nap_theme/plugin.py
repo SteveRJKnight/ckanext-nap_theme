@@ -270,6 +270,7 @@ def custom_topics_validator(key, data, errors, context):
 
 def _create_tag_vocabulary(vocab_name, tags):
     user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+    print(f'user {user}')
     context = {'user': user['name']}
     try:
         data = {'id': vocab_name }
@@ -343,6 +344,7 @@ def get_road_networks():
     return _get_tag_vocabulary_tags('nap_road_networks')
 
 def get_topics():
+    
     create_topics()
     return _get_tag_vocabulary_tags('nap_topics')
 
