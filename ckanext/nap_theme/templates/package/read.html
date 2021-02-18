@@ -1,0 +1,277 @@
+{% ckan_extends %}
+
+{% block main_section_content%}
+<h1 class="govuk-heading-xl govuk-!-margin-bottom-6">
+  {% block page_heading %}
+    {{ h.dataset_display_name(pkg) }}
+    {% if pkg.state.startswith('draft') %}
+      [{{ _('Draft') }}]
+    {% endif %}
+    {% if pkg.state == 'deleted' %}
+      [{{ _('Deleted') }}]
+    {% endif %}
+  {% endblock %}
+</h1>
+{% if c.userobj %}
+  {% if h.check_access('package_update', pkg_dict) %}
+  <a class="govuk-button" data-module="govuk-button" href="{{ url_for('dataset.edit', id=pkg_dict.name) }}">{{_('Edit')}}</a>
+  {% endif %}
+{% endif %}
+<div class="govuk-tabs" data-module="govuk-tabs">
+  <h2 class="govuk-tabs__title">
+    {{ _('Contents') }}
+  </h2>
+  <ul class="govuk-tabs__list">
+    <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+      <a class="govuk-tabs__tab" href="#summary">
+        {{ _('Summary') }}
+      </a>
+    </li>
+    <li class="govuk-tabs__list-item">
+      <a class="govuk-tabs__tab" href="#more-details">
+        {{ _('More details') }}
+      </a>
+    </li>
+    <li class="govuk-tabs__list-item">
+      <a class="govuk-tabs__tab" href="#about-publisher">
+        {{ _('About Publisher') }}
+      </a>
+    </li>
+  </ul>
+  <div class="govuk-tabs__panel" id="summary">
+    <dl class="govuk-summary-list govuk-summary-list--no-border">
+      {% if(pkg.data_available == "no") %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            {{_("Availability")}}
+          </dt>
+          <dd class="govuk-summary-list__value">
+            <strong class="govuk-tag govuk-tag--grey">
+              {{_("Not released")}}
+            </strong>
+          </dd>
+        </div>
+      {% endif %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Published by:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          <a class="govuk-link" href="{% url_for _(pkg.organization.type ~ '.read'), id=pkg.organization.name %}">{{ pkg.organization.title}}</a>
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Last updated:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_modified %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Category:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% if pkg.groups|length > 0 %}
+            {{ pkg.groups[0].display_name }}
+          {% else %}
+            {{ _('None') }}
+          {% endif %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Licence:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% if 'license_url' in pkg %}
+          <a href="{{ pkg_dict.license_url }}" rel="dc:rights" class="govuk-link">{{ pkg.license_title }}</a>
+        {% else %}
+          {% if pkg_dict.license_id %}
+            <span property="dc:rights">{{ pkg.license_title }}</span>
+          {% else %}
+            <span>{{ _('No Licence Provided') }}</span>
+          {% endif %}
+        {% endif %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Description:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% if 'description' in pkg %}
+            <p>{{ pkg.description}}</p>
+          {% endif %}
+        </dd>
+      </div>
+    </dl>
+    <div class="govuk-!-margin-top-3">
+      <label class="govuk-label govuk-label--s" for="summary-text">
+        {{ _('Summary') }}
+      </label>
+      <div class="govuk-body" id="summary-text" name="summary-text">
+        {{ h.render_markdown(h.get_translated(pkg, 'notes')) }}
+      </div>
+      <div class="govuk-body govuk-!-margin-top-1 govuk-!-margin-bottom-0">
+        <a href="#!" data-folded="folded" class="govuk-link " data-module="summary-toggle" id="summary-toggle">Show full summary</a>
+      </div>
+      {% asset 'nap_theme/summary_expander_js' %}
+    </div>
+  </div>
+  <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="more-details">
+    <dl class="govuk-summary-list govuk-summary-list--no-border">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Version:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {{ pkg.version }}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Date first published:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_created %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Last updated:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_modified %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Update frequency:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+        {% if (pkg.update_frequency) %}
+          {{ sentence_case(pkg.update_frequency) }}
+        {% else %}
+        {{ _('None') }}
+        {% endif %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Category:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% if pkg.groups|length > 0 %}
+            {{ pkg.groups[0].display_name }}
+          {% else %}
+            {{ _('None') }}
+          {% endif %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Licence:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% if 'license_url' in pkg %}
+          <a href="{{ pkg_dict.license_url }}" rel="dc:rights" class="govuk-link">{{ pkg.license_title }}</a>
+        {% else %}
+          {% if pkg_dict.license_id %}
+            <span property="dc:rights">{{ pkg.license_title }}</span>
+          {% else %}
+            <span>{{ _('No Licence Provided') }}</span>
+          {% endif %}
+        {% endif %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Tags:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% for tag in pkg.tags %}
+          <strong class="govuk-tag">
+            {{ tag.display_name }}
+          </strong>
+          {% endfor %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Contact:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {{ pkg.author }}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Contact email:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {{ pkg.author_email }}
+        </dd>
+      </div>
+    </dl>
+  </div>
+  <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="about-publisher">
+    <dl class="govuk-summary-list govuk-summary-list--no-border">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Published by:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          <a class="govuk-link" href="{% url_for _(pkg.organization.type ~ '.read'), id=pkg.organization.name %}">{{ pkg.organization.title}}</a>
+        </dd>
+      </div>
+    </dl>
+  </div>
+</div>
+<div>
+  <h2 class="govuk-heading-m">{{ _('View this dataset') }}</h2>
+  {% if (pkg.data_available == "no") %}
+    <p class="govuk-body">
+      {{_("This data hasn’t been released by the publisher. Contact the publisher for more information.")}}
+    </p>
+    <dl class="govuk-summary-list govuk-summary-list--no-border">
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Contact:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {{ pkg.author }}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Contact email:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {{ pkg.author_email }}
+        </dd>
+      </div>
+    </dl>
+  {% else %}
+    <p class="govuk-body">
+      {{ _('This dataset is hosted elsewhere. In order to access the data you will need to access it from their website.') }}
+    </p>
+      <dl class="govuk-summary-list govuk-summary-list--no-border">
+        {% if (pkg.data_formats and pkg.data_formats > '') %}
+        <div class="govuk-summary-list__row">
+          <dt class="govuk-summary-list__key">
+            {{ _('Data formats:') }}
+          </dt>
+          <dd class="govuk-summary-list__value">
+            {{ pkg.data_formats }}
+          </dd>
+        </div>
+        {% endif %}
+      </dl>
+    <a href="{{ pkg.url }}" class="govuk-button" data-module="govuk-button">
+      {{ _('View this dataset') }}
+    </a>
+  {% endif %}
+</div>
+{% endblock %}

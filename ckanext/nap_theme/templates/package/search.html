@@ -1,0 +1,279 @@
+{% ckan_extends %}
+
+{% block breadcrumb_content %}
+  <li class="govuk-breadcrumbs__list-item"><a class='govuk-breadcrumbs__link'>{{_(h.nap_theme_get_package_display_name(dataset_type.title()))}}</a></li>
+{% endblock %}
+
+{% block main_content%}
+<div class="govuk-grid-row govuk-!-margin-bottom-6">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">
+      {% block page_heading %}
+      {{ _('Transport data') }}
+      {% endblock %}
+    </h1>
+    <form 
+      action="{{ action }}" 
+      method="get"
+      role="search"
+      id="seach-form"
+      >    
+      <div class="govuk-form-group" data-children-count="1">
+        <input 
+          id="search" 
+          type="search" 
+          class="govuk-input govuk-input--width-20 nap-search-text" 
+          name="q" 
+          placeholder="Search datasets"  
+          value="{{ q }}"  
+          aria-label="Search Datasets"
+        >
+        <button 
+          type="submit" 
+          class="govuk-button nap-search-button" 
+          data-module="govuk-button" 
+          aria-label="Search Button"
+        >
+          <i class="fa fa-search"></i>
+        </button>
+      </div>
+  </div>
+</div>
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-one-third">
+    {% block sub_section_content%}
+    {% asset 'nap_theme/search_filter_js' %}
+    {% asset 'nap_theme/search_css' %}
+    <div class="search-filter">
+      <h2 class="govuk-heading-m">{{ _('Filter by') }}</h2>
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="filters-hint">
+          <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
+            <div class="govuk-accordion__section">
+              <div class="govuk-accordion__section-header">
+                <span class="filter-expander-icon"></span>
+                <h2 class="govuk-accordion__section-heading">
+                  <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+                   {{_("Publisher")}}
+                  </span>
+                </h2>
+                {% if fields_grouped.get('organization') %}
+                  <p class="govuk-body-s filter-selected">{{ fields_grouped.get('organization')|length }} selected</p>
+                {% endif %}
+              </div>
+              <div id="accordion-default-content-1" class="govuk-accordion__section-content"  aria-labelledby="accordion-default-heading-2">
+                <div class="app-c-option-select__filter govuk-!-margin-bottom-6">    
+                  <label for="oranisation-filter" class="govuk-label govuk-visually-hidden">
+                    {{_("Filter Publisher")}}
+                  </label>
+                  <input id="oranisation-filter" class="filter-input govuk-input" type="text" >
+                </div>
+                {% set organizations_available = h.nap_theme_get_orgs() %}
+                {% set organization_params =  fields_grouped.get('organization') or [] %}
+                
+                <div class="govuk-checkboxes filter-checkboxes">
+                  {% for organization in organizations_available %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" id="org_{{ organization.name }}" name="organization" type="checkbox" value="{{ organization.name }}" onChange="this.form.submit()"
+                      {% if organization.name in organization_params %} checked {% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="org_{{ organization.name }}">
+                        {{ organization.display_name }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <div class="govuk-accordion__section ">
+              <div class="govuk-accordion__section-header">
+                <span class="filter-expander-icon"></span>
+                <h2 class="govuk-accordion__section-heading">
+                  <span class="govuk-accordion__section-button" id="accordion-default-heading-2">
+                    {{_("Frequency of update")}}
+                  </span>
+                </h2>
+                {% if fields_grouped.get('update_frequency') %}
+                  <p class="govuk-body-s filter-selected">{{ fields_grouped.get('update_frequency')|length }} selected</p>
+                {% endif %}
+              </div>
+              <div id="accordion-default-content-2" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-2">
+                <div class="app-c-option-select__filter govuk-!-margin-bottom-6">    
+                  <label for="frequency-filter" class="govuk-label govuk-visually-hidden">
+                    {{_("Filter Update Frequency")}}
+                  </label>
+                  <input id="frequency-filter" class="filter-input govuk-input" type="text">
+                </div>
+                {% set frequencies = [
+                  {'name': 'Live', 'value': 'live'},
+                  {'name': 'Daily', 'value': 'daily'},
+                  {'name': 'Weekly', 'value': 'weekly'},
+                  {'name': '2 Weekly', 'value': '2weekly'},
+                  {'name': '4 Weekly', 'value': '4weekly'},
+                  {'name': 'Monthly', 'value': 'monthly'},
+                  {'name': '6 Monthly', 'value': '6monthly'},
+                  {'name': 'Yearly', 'value': 'yearly'},
+                  {'name': 'Historic', 'value': 'historic'}] 
+                %}
+                {% set frequency_params =  fields_grouped.get('update_frequency') or [] %}
+                <div class="govuk-checkboxes filter-checkboxes">
+                  {% for frequency in frequencies %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" id="freq_{{frequency.value}}" name="update_frequency" type="checkbox" value="{{frequency.value}}" onChange="this.form.submit()"
+                      {% if frequency.value in frequency_params %} checked {% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="freq_{{frequency.value}}">
+                        {{frequency.name}}
+                      </label>
+                    </div>
+                    {% endfor %}
+                  </div>
+              </div>
+            </div>
+            <div class="govuk-accordion__section ">
+              <div class="govuk-accordion__section-header">
+                <span class="filter-expander-icon"></span>
+                <h2 class="govuk-accordion__section-heading">
+                  <span class="govuk-accordion__section-button" id="accordion-default-heading-3">
+                    {{_("Tag")}}
+                  </span>
+                </h2>
+                {% if fields_grouped.get('tags') %}
+                  <p class="govuk-body-s filter-selected">{{ fields_grouped.get('tags')|length }} selected</p>
+                {% endif %}
+              </div>
+              <div id="accordion-default-content-3" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-3">
+                <div class="app-c-option-select__filter govuk-!-margin-bottom-6">    
+                  <label for="tag-filter" class="govuk-label govuk-visually-hidden">
+                    {{_("Filter Tags")}}
+                  </label>
+                  <input id="tag-filter" class="filter-input govuk-input" type="text">
+                </div>
+                {% set tags_available = h.nap_theme_get_tags() %}
+                {% set tags_params =  fields_grouped.get('tags') or [] %}
+                <div class="govuk-checkboxes filter-checkboxes">
+                  {% for tag in tags_available %}
+                    <div class="govuk-checkboxes__item">
+                      <input class="govuk-checkboxes__input" 
+                        id="tag_{{ tag.name }}" name="tags" 
+                        type="checkbox" value="{{ tag.name }}" onChange="this.form.submit()"
+                        {% if tag.name in tags_params %} checked {% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="tag_{{ tag.name }}">
+                        {{ tag.display_name }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+      <noscript>
+        <button class="govuk-button" data-module="govuk-button" type="submit">
+          {{ _("Filter Results") }}
+        </button>
+      </noscript>
+      {% if fields_grouped %}
+        <a href="{{ h.url_for('dataset.search', q=q, sort=sort_by_selected) }}" class="govuk-link">{{_("Remove filters")}}</a>
+      {% endif %}
+    </div>
+    {% endblock %}
+  </div>
+  <div class="govuk-grid-column-two-thirds">
+    {% block main_section_content%}
+        <p class="govuk-body govuk-!-font-weight-bold">{{ page.items|count }} 
+        {% if fields_grouped %}
+          {{ _('filtered') }}
+        {% endif %}
+        {{ _('results') }}
+        {% if q %}
+          {{ _('for ')}}" {{ q }}" 
+        {% endif %}
+        </p>
+    <div class="sort-by">
+      <form>
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="sort-input">
+            Sort by
+          </label>
+          {% set sort_fields = [
+          {'name': 'Most recent', 'value': 'metadata_modified desc'},
+          {'name': 'Relevance', 'value': 'score desc'},
+          {'name': 'Name Ascending', 'value': 'title_string asc'},
+          {'name': 'Name Descending', 'value': 'title_string desc'}
+          ] 
+        %}
+          <select class="govuk-select search-select" id="sort-input" name="sort" onchange="this.form.submit()">
+            {% for field in sort_fields %}
+              <option value="{{field.value}}"
+              {% if sort_by_selected == field.value %}
+                selected
+              {% endif %}
+              >
+              {{field.name}}
+            </option>
+            {% endfor %}
+          </select>
+          <noscript>
+            <button class="govuk-button" data-module="govuk-button" type="submit">
+              {{ _("Sort Results") }}
+            </button>
+          </noscript>
+        </div>
+      </form>
+    </div>
+    {% set organizations_available = h.nap_theme_get_orgs() %}
+    {% set tags_available = h.nap_theme_get_tags() %}
+    {% set frequencies = [
+      {'name': 'Live', 'value': 'live'},
+      {'name': 'Daily', 'value': 'daily'},
+      {'name': 'Weekly', 'value': 'weekly'},
+      {'name': '2 Weekly', 'value': '2weekly'},
+      {'name': '4 Weekly', 'value': '4weekly'},
+      {'name': 'Monthly', 'value': 'monthly'},
+      {'name': '6 Monthly', 'value': '6monthly'},
+      {'name': 'Yearly', 'value': 'yearly'},
+      {'name': 'Historic', 'value': 'historic'}] 
+    %}
+    <div class="facet-tags" data-module="track-click">
+      {% for filter_field in fields_grouped %}
+      <div class="facet-tags__group">
+        {% for filter_value in fields_grouped.get(filter_field)%}
+          <div class="facet-tags__wrapper">
+            <span class="facet-tags__preposition">
+              {% if loop.index0 > 0 %}
+                {{_('or')}}
+              {% elif filter_field == 'organization'%}
+              {{_('From')}}
+              {% elif filter_field == 'update_frequency'%}
+              {{_('Updates')}}
+              {% elif filter_field == 'tags' %}
+              {{_('About')}}
+              {% endif %}
+            </span>
+            <span class="facet-tag">
+              {% if filter_field == 'organization'%}
+                {% set filter_display_name = h.list_dict_filter(organizations_available, "name", "display_name", filter_value) %}
+                {% set filter_id = 'org_' ~ filter_value %}
+              {% elif filter_field == 'update_frequency' %}
+                {% set filter_display_name = h.list_dict_filter(frequencies, "value", "name", filter_value) %}
+                {% set filter_id = 'freq_' ~ filter_value %}
+              {% elif filter_field == 'tags' %}
+                {% set filter_display_name = h.list_dict_filter(tags_available, "name", "display_name", filter_value) %}
+                {% set filter_id = 'tag_' ~ filter_value %}
+              {% endif %}
+              <span class="facet-tag__text">{{ filter_display_name }}</span>
+              <button type="button" class="facet-tag__remove" data-module="remove-filter-link" data-track-label="{{filter_display_name}}" data-facet="{{filter_field}}" data-value="{{filter_id}}" data-name="">✕</button>
+            </span>
+          </div>
+          {% endfor %}
+      </div>
+      {% endfor %}
+  </div>
+      {% block package_search_results_list %}
+          {% snippet 'snippets/package_list.html', packages=page.items %}
+      {% endblock %}
+    {% endblock %}
+  </div>
+</div>
+{% endblock %}
+

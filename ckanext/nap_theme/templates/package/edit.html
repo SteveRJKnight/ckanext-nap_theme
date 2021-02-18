@@ -1,0 +1,19 @@
+{% ckan_extends %}
+
+{% set form_data = h.nap_theme_get_form_data(form_vars["data"],pkg_dict) %}
+{% set error_summary = h.nap_theme_get_sorted_error_summary(form_vars["error_summary"]) %}
+
+{% block main_section_content %}
+  <section class="module">
+    <div class="module-content">
+      <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">
+      {% block page_heading %}{{ 
+        _('Edit transport data') }}
+      {% endblock %}
+      </h1>
+      {% block form %}
+        {% snippet "package/snippets/dataset_form.html", action=g.form_action, error_summary=error_summary, pkg_dict=pkg_dict, form_data=form_data %}
+      {% endblock %}
+    </div>
+  </section>
+{% endblock %}

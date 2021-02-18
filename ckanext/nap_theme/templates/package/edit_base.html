@@ -1,0 +1,21 @@
+{% extends "page.html" %}
+
+{% set pkg = pkg_dict %}
+{% set dataset_type = dataset_type or pkg.type or 'dataset' %}
+
+{% block subtitle %}{{ _(dataset_type.title()) }}{% endblock %}
+
+{% block breadcrumb_content_selected %}{% endblock %}
+
+{% block breadcrumb_content %}
+    {{ super() }}
+    {% if pkg %}
+        {% set dataset = h.dataset_display_name(pkg) %}
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link" href="{% url_for _(pkg.type ~ '.read'), id=pkg.id if is_activity_archive else pkg.name %}">{{ dataset|truncate(30) }}</a>
+        </li>
+        <li class="govuk-breadcrumbs__list-item">
+            <a class="govuk-breadcrumbs__link">{{ _('Edit') }}</a>
+        </li>
+    {% endif %}
+{% endblock %}

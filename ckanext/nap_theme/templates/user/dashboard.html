@@ -1,0 +1,85 @@
+{% ckan_extends %}
+{% block breadcrumb_content %}
+<li class="govuk-breadcrumbs__list-item"><a href="{{ h.url_for('dashboard.index') }}">{{ _('Dashboard') }}</a></li>
+{% endblock %}
+
+{% block main_section_content %}
+
+  <section class="module">
+    <div class="module-content">
+      <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">
+      {% block page_heading %}
+      {{_('Dashboard') }}
+      {% endblock %}
+      </h1>
+
+      <div class="govuk-tabs" data-module="govuk-tabs">
+        <h2 class="govuk-tabs__title">
+          Contents
+        </h2>
+        <ul class="govuk-tabs__list">
+          <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-tabs__tab" href="#news-feed">
+              News feed
+            </a>
+          </li>
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#my-metadata">
+              My metadata
+            </a>
+          </li>
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#publishers">
+              Publishers
+            </a>
+          </li>
+          <li class="govuk-tabs__list-item">
+            <a class="govuk-tabs__tab" href="#groups">
+              Groups
+            </a>
+          </li>
+        </ul>
+        <div class="govuk-tabs__panel" id="news-feed">
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">
+                &nbsp;
+              </dt>
+            <dd class="govuk-summary-list__value">
+              &nbsp;
+            </dd>            
+        </div>
+          </dl>
+        </div>
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="my-metadata">
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+          </dl>
+        </div>
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="publishers">
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+          </dl>
+        </div>
+        <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="groups">
+          <dl class="govuk-summary-list govuk-summary-list--no-border">
+          </dl>
+        </div>
+      </div>      
+
+      <h1 class="govuk-heading-m">
+        {{_('Publish transport data')}}
+        <span class="govuk-caption-m">
+            {{_('Tell us about your data and where it is so we can help people find it')}}
+        </span>
+      </h1>
+      <a 
+        data-prevent-double-click="true" 
+        class="govuk-button" 
+        data-module="govuk-button" 
+        href="{{ h.url_for('dataset.new') }}">
+          {{_('Publish transport data')}}
+      </a>
+    </div>
+  </section>
+{% endblock %}
+
+

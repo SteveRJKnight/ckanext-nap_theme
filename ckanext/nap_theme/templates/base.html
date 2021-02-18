@@ -1,0 +1,39 @@
+{% ckan_extends %}
+{% block htmltag %}
+<html lang="en" class="govuk-template ">
+{% endblock %}
+{% block meta %}
+  {{ super() }}
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-0LCLXB2HEZ');
+  </script>
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-TQDBGHF');
+  </script>
+{% endblock %}
+{% block styles %}
+	{% asset 'nap_theme/govuk_css' %}
+{% endblock %}
+{% block bodytag %}
+class="govuk-template__body" style="display:none;"
+{% endblock %}
+{% block scripts %}
+  {% asset 'nap_theme/govuk_js' %}
+
+  {% block govuk_init %}
+    {% asset 'nap_theme/govuk_init_js' %}
+    {% asset 'nap_theme/custom_js' %}
+  	{% asset 'nap_theme/ckanstyleoverride_css' %}
+  	{% asset 'nap_theme/govuk_cookie_css' %}
+  	{% asset 'nap_theme/custom_css' %}
+  {% endblock %}
+  {{ super() }}
+{% endblock %}

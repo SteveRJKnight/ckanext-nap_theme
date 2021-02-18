@@ -1,0 +1,18 @@
+{% ckan_extends %}
+
+{% block breadcrumb_content %}
+  <li class="govuk-breadcrumbs__list-item">{{ h.nav_link(_('Login'), named_route='user.login') }}</li>
+{% endblock %}
+{% set error_summary = h.flash.pop_messages() | list%}
+
+{% block main_section_content %}
+  <section class="module">
+    <div class="module-content">
+      <h1 class="govuk-heading-xl">{% block page_heading %}{{ _('Login') }}{% endblock %}</h1>
+
+      {% block form %}
+        {% snippet "user/snippets/login_form.html", action=g.login_handler, error_summary=error_summary %}
+      {% endblock %}
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% ckan_extends %}
+
+{% if not h.organizations_available('create_dataset')
+        and not h.check_config_permission('ckan.auth.create_unowned_dataset') %}
+
+    {% include "package/snippets/cannot_create_dataset.html" %}
+{% endif  %}
+{{error_summary}}
+{% set form_data = h.nap_theme_get_form_data(form_vars["data"],{}) %}
+{% set error_summary = h.nap_theme_get_sorted_error_summary(form_vars["error_summary"]) %}
+
+{% block main_section_content %}
+  <section class="module">
+    <div class="module-content">
+      <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">
+      {% block page_heading %}{{ 
+        _('Publish transport data') }}
+      {% endblock %}
+      </h1>
+
+      {% block form %}
+        {% snippet "package/snippets/dataset_form.html", action=g.form_action, error_summary=error_summary, form_data=form_data %}
+      {% endblock %}
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% ckan_extends %}
+
+{% block breadcrumb_content %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="{% url_for _(group_type+'.index') %}">Publisher</a>
+  </li>
+{% endblock %}
+
+
+{% block main_content%}
+<div class="govuk-grid-row govuk-!-margin-bottom-6">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">
+      {% block page_heading %}
+      {{ _('Publisher') }}
+      {% endblock %}
+    </h1>
+  </div>
+</div>
+{% endblock %}
+

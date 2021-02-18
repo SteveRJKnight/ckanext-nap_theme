@@ -1,0 +1,94 @@
+{#
+Displays a single of dataset.
+
+package        - A package to display.
+item_class     - The class name to use on the list item.
+hide_resources - If true hides the resources (default: false).
+banner         - If true displays a popular banner (default: false).
+truncate       - The length to trucate the description to (default: 180)
+truncate_title - The length to truncate the title to (default: 80).
+
+Example:
+
+  {% snippet 'snippets/package_item.html', package=c.datasets[0] %}
+
+#}
+{% set truncate = truncate or 180 %}
+{% set truncate_title = truncate_title or 80 %}
+{% set title = package.title or package.name %}
+{% set notes = h.markdown_extract(package.notes, extract_length=truncate) %}
+
+{% block package_item %}
+<div class="govuk-grid-row">
+    {% block content %}
+      <div class="govuk-grid-column-full">
+        {% block heading %}
+        <h3 class="govuk-heading-m">
+            {% block heading_private %}
+              {% if package.private %}
+                <span class="dataset-private label label-inverse">
+                    <i class="fa fa-lock"></i>
+                    {{ _('Private') }}
+                </span>
+              {% endif %}
+            {% endblock %}
+            {% block heading_title %}
+		          {{ 
+                h.link_to(h.truncate(title, truncate_title), 
+                h.url_for('%s.read' % package.type, id=package.name), 
+                class='govuk-link govuk-link--no-visited-state') 
+              }}
+            {% endblock %}
+            {% block heading_meta %}
+              {% if package.get('state', '').startswith('draft') %}
+                <span class="label label-info">{{ _('Draft') }}</span>
+              {% elif package.get('state', '').startswith('deleted') %}
+                <span class="label label-danger">{{ _('Deleted') }}</span>
+              {% endif %}
+              {{ h.popular('recent views', package.tracking_summary.recent, min=10) if package.tracking_summary }}
+            {% endblock %}
+          </h3>
+        {% endblock %}
+
+        {% block banner %}
+          {% if banner %}
+            <span class="banner">{{ _('Popular') }}</span>
+          {% endif %}
+        {% endblock %}
+
+        {% block additional_details %}
+          {% if(package.data_available == "no") %}
+            <p class="govuk-body"> 
+              <span class="govuk-!-font-weight-bold">
+                {{_("Availability:")}}
+              </span>
+                {{ _("Not released") }}
+            </p>
+          {% endif %}
+          <p class="govuk-body"> 
+            <span class="govuk-!-font-weight-bold">
+              Published by: 
+            </span>
+              {{ package.organization.title }}
+          </p>
+          {% if package.regularly_updated == "yes" %}
+            <p class="govuk-body"> 
+              <span class="govuk-!-font-weight-bold">
+                {{_("Frequency of update:")}}
+              </span>
+                {{ package.update_frequency[0]|upper}}{{package.update_frequency[1:] }}
+            </p>
+          {% endif %}
+        {% endblock %}
+
+        {% block notes %}
+          {% if notes %}
+            <div class="govuk-body">{{ notes|urlize }}</div>
+          {% else %}
+            <p class="govuk-body">{{ _("This dataset has no description") }}</p>
+          {% endif %}
+        {% endblock %}
+      </div>
+    {% endblock %}
+ </div>
+{% endblock %}

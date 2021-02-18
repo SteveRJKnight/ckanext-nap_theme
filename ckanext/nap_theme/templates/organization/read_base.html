@@ -1,0 +1,12 @@
+{% ckan_extends %}
+
+{% block breadcrumb_content %}
+<li class="govuk-breadcrumbs__list-item">
+  <a class="govuk-breadcrumbs__link" href="{% url_for _(group_type+'.index') %}">Publishers</a>
+</li>
+ <!-- <li>{% link_for _('Organizations'), named_route=group_type+'.index' %}</li> -->
+<li class="govuk-breadcrumbs__list-item">
+  <a class="govuk-breadcrumbs__link" href="{% url_for _(group_type+'.read'), id=group_dict.name %}">{{ group_dict.display_name|truncate(35) }}</a>
+</li>
+  <!-- <li class="active">{% link_for group_dict.display_name|truncate(35), named_route=group_type+'.read', id=group_dict.name %}</li> -->
+{% endblock %}

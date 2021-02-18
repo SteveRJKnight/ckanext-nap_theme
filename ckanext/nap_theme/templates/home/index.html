@@ -1,0 +1,80 @@
+{% extends "page.html" %}
+
+{% block breadcrumb_content %}
+  <!-- Make this section not blank-->
+{% endblock %}
+{% block main_section_content %}
+
+  <section class="module">
+    <div class="module-content">
+      <h1 class="govuk-heading-xl govuk-!-margin-bottom-6">
+      {% block page_heading %}
+      {{_('UK transport data catalogue')}}
+      {% endblock %}
+      <span class="govuk-caption-xl">
+        {{_('A single point of access for UK transport data')}}
+      </span>
+      </h1>
+
+      <form class="" action="/dataset/" method="get">
+        <div class="govuk-form-group" data-children-count="1">
+          <input 
+            id="home-search" 
+            type="search" 
+            class="govuk-input nap-search-text govuk-input--width-20" 
+            name="q" 
+            placeholder="Search datasets" 
+            aria-label="Home Search Datasets"
+          >
+          <button 
+            type="submit" 
+            class="govuk-button nap-search-button" 
+            data-module="govuk-button" 
+            aria-label="Search Button"
+          >
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </form>
+
+      <div class="govuk-form-group">
+        <a 
+          data-prevent-double-click="true" 
+          class="govuk-button" 
+          data-module="govuk-button" 
+          href="{{ h.url_for('dataset.search') }}"
+        >
+          {{_('Browse transport data')}}
+        </a>
+      </div>
+
+      <div class="govuk-form-group">
+      <h1 class="govuk-heading-m">
+        {{_('Publish transport data')}}
+        <span class="govuk-caption-m">
+            {{_('Tell us about your data and where it is so we can help people find it')}}
+        </span>
+      </h1>
+      {% if c.userobj %}
+        <a 
+          data-prevent-double-click="true" 
+          class="govuk-button" 
+          data-module="govuk-button" 
+          href="{{ h.url_for('dataset.new') }}"
+        >
+            {{_('Publish transport data')}}
+        </a>
+      {% else %}
+        <a 
+          data-prevent-double-click="true" 
+          class="govuk-button" 
+          data-module="govuk-button" 
+          href="{{ h.url_for('/user/login') }}"
+        >
+            {{_('Publish transport data')}}
+        </a>
+      {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% ckan_extends %}
+
+{% set logout_url = h.url_for('user.logout') %}
+
+{% block actions %}{% endblock %}
+
+{% block form %}
+
+  <div class="alert alert-danger"><p class="govuk-body">{{ _("You're already logged in as {user}.").format(user=g.user) }} <a href="{{ logout_url }}">{{ _('Logout') }}</a>?</p></div>
+{% endblock %}

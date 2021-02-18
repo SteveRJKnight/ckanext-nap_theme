@@ -1,0 +1,24 @@
+{% block package_list %}
+  {% if packages %}
+  <div>
+    	{% block package_list_inner %}
+	      {% for package in packages %}
+          {% snippet 'snippets/package_item.html', package=package, item_class=item_class, hide_resources=hide_resources, banner=banner, truncate=truncate, truncate_title=truncate_title %}
+          <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+	      {% endfor %}
+	    {% endblock %}
+  </div>
+  {% else %}
+    <div class="govuk-!-margin-9">
+      <p class="govuk-body"> 0 results found</p>
+      <h3 class="govuk-heading-m">Please try:</h3>
+        <ul class="govuk-!-padding-left-3">
+          <li><p class="govuk-body">searching again using different words</p></li>
+          <li><p class="govuk-body">removing your filters</p></li>
+        </ul> 
+        <h3 class="govuk-heading-m">Older content</h2>
+        <p class="govuk-body">If you've landed on this page from following a link or from searching on the site, we can help you.</p>
+        <p class="govuk-body">We recomend you start a new search, add more search terms into the search box, or choose a publisher to filter by.</p>
+    </div>
+  {% endif %}
+{% endblock %}

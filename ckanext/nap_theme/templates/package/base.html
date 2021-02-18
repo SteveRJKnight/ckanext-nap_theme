@@ -1,0 +1,23 @@
+{% ckan_extends %}
+
+{% block breadcrumb_content %}
+  {% if pkg %}
+    {% set dataset = h.dataset_display_name(pkg) %}
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="{% url_for _(dataset_type ~ '.search') %}">{{ _('Transport data') }}</a>
+      </li>
+      <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link">{{ dataset|truncate(30) }}</a>
+      </li>
+    <!-- <li{{ self.breadcrumb_content_selected() }}>{% link_for dataset|truncate(30), named_route=pkg.type ~ '.read', id=pkg.id if is_activity_archive else pkg.name %}</li> -->
+  {% else %}
+  <li class="govuk-breadcrumbs__list-item">
+    <a class="govuk-breadcrumbs__link" href="{% url_for _(dataset_type ~ '.search') %}">{{ dataset_type.title() }}</a>
+  </li>
+    <!-- <li>{% link_for _(dataset_type.title()), named_route=dataset_type ~ '.search' %}</li> -->
+    <li class="govuk-breadcrumbs__list-item">
+        <a class="govuk-breadcrumbs__link" href="">{{ _('Publish transport data') }}</a>
+      </li>
+    <!-- <li class="active"><a href="">{{ _('Create Dataset') }}</a></li> -->
+  {% endif %}
+{% endblock %}
