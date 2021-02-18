@@ -25,8 +25,13 @@ var filterFacetTags = document.getElementsByClassName("facet-tag__remove")
 for (filterFacet of filterFacetTags) {
     filterFacet.addEventListener("click", function(event) {
         var elementId = event.target.dataset.value;
-        var filterCheckboxElement = document.getElementById(elementId);
-        filterCheckboxElement.checked = !filterCheckboxElement.checked;
-        filterCheckboxElement.form.submit();
+        var filterElement = document.getElementById(elementId);
+        if (filterElement.type === 'checkbox') {
+            filterElement.checked = !filterElement.checked;
+        } 
+        else if (filterElement.type === 'text') {
+            filterElement.value = "";
+        }
+        filterElement.form.submit();
     });
 }

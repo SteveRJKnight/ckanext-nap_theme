@@ -81,7 +81,7 @@ def get_form_data(form_data, pkg_dict):
         'regularly_updated_earliest_month': '',
         'regularly_updated_earliest_year': '',
         'description': '',
-        'data_available': '',
+        'data_available': ''
     }
     # set value of form either blank if new, edit value or if an error the value entered by the user!
     for key in blank_form_dict.keys():
@@ -262,7 +262,94 @@ def custom_required_author_name_validator(key, data, errors, context):
         raise Invalid(_('8|Enter contact name for people to request the dataset'))
     return value
 
+def custom_topics_validator(key, data, errors, context):
+    value = data.get(key)
+    if not value:
+        raise Invalid(_('6|Enter what topics this dataset relates to'))
+    return value
 
+def _create_tag_vocabulary(vocab_name, tags):
+    user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+    context = {'user': user['name']}
+    try:
+        data = {'id': vocab_name }
+        toolkit.get_action('vocabulary_show')(context, data)
+    except toolkit.ObjectNotFound:
+        data = {'name': vocab_name }
+        vocab = toolkit.get_action('vocabulary_create')(context, data)
+        for tag in tags:
+            data = {'name': tag, 'vocabulary_id': vocab['id']}
+            toolkit.get_action('tag_create')(context, data)
+
+def _get_tag_vocabulary_tags(vocab_name):
+    try:
+        tag_list = toolkit.get_action('tag_list')
+        tags = tag_list(data_dict={'vocabulary_id': vocab_name})
+        tags.sort(key = 'Other'.__eq__)
+        return tags
+    except toolkit.ObjectNotFound:
+        return None
+
+def create_topics():
+    topics = (
+        u'Air quality and the environment',
+        u'Accidents and incidents',
+        u'Assets and asset management',
+        u'Car parks',
+        u'Freight and logistics',
+        u'Parking and rest areas',
+        u'Public transport',
+        u'Roadworks',
+        u'Safety',
+        u'Street works',
+        u'Temporary measures',
+        u'Tolls and toll stations',
+        u'Traffic data',
+        u'Traffic signs and regulations',
+        u'Trip planning',
+        u'Utilities',
+        u'Other'
+    )
+    _create_tag_vocabulary('nap_topics', topics)
+
+def create_transport_modes():
+    transport_modes = (
+        u'Cars',
+        u'Trucks',
+        u'Bicycles',
+        u'Electric vehicles',
+        u'Multi-modal',
+        u'Pedestrians',
+        u'Buses',
+        u'Demand-responsive',
+        u'Other'
+    )
+    _create_tag_vocabulary('nap_transport_modes', transport_modes)
+    
+def create_road_network():
+    road_networks = (
+        u'Motorways',
+        u'Roads',
+        u'Dual carriageways',
+        u'Single carriageways',
+        u'Gradients',
+        u'Junctions',
+        u'Other'
+    )
+    _create_tag_vocabulary('nap_road_networks', road_networks)
+
+def get_road_networks():
+    create_road_network()
+    return _get_tag_vocabulary_tags('nap_road_networks')
+
+def get_topics():
+    create_topics()
+    return _get_tag_vocabulary_tags('nap_topics')
+
+
+def get_transport_modes():
+    create_transport_modes()
+    return _get_tag_vocabulary_tags('nap_transport_modes')
 
 class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     plugins.implements(plugins.IConfigurer)
@@ -288,7 +375,10 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'nap_theme_get_tag_names': get_tag_names,
             'nap_theme_get_sorted_error_summary': get_sorted_error_summary,
             'nap_theme_get_form_data' : get_form_data,
-            'nap_theme_get_package_display_name' : get_package_display_name
+            'nap_theme_get_package_display_name' : get_package_display_name,
+            'nap_theme_get_topics': get_topics,
+            'nap_theme_get_transport_modes': get_transport_modes,
+            'nap_theme_get_road_networks': get_road_networks,
             }
 
     # IBlueprint
@@ -393,6 +483,13 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             toolkit.get_converter('convert_to_extras')],
             'data_available':[custom_data_available_validator,
                 toolkit.get_converter('convert_to_extras')],
+            'topics':[custom_topics_validator,
+                    toolkit.get_validator('ignore_missing'),
+                    toolkit.get_converter('convert_to_tags')('nap_topics')],
+            'transport_modes':[toolkit.get_validator('ignore_missing'),
+                    toolkit.get_converter('convert_to_tags')('nap_transport_modes')],
+            'road_networks':[toolkit.get_validator('ignore_missing'),
+                    toolkit.get_converter('convert_to_tags')('nap_road_networks')]
         })
         return schema
 
@@ -454,6 +551,13 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'data_available':[custom_data_available_validator,
                     toolkit.get_converter('unicode_safe'),
                     toolkit.get_converter('convert_from_extras')],
+            'topics':[custom_topics_validator,
+                    toolkit.get_converter('convert_from_tags')('nap_topics'),
+                    toolkit.get_validator('ignore_missing')],
+            'transport_modes':[ toolkit.get_converter('convert_from_tags')('nap_transport_modes'),
+                    toolkit.get_validator('ignore_missing')],
+            'road_networks':[toolkit.get_converter('convert_from_tags')('nap_road_networks'),
+                    toolkit.get_validator('ignore_missing')]
         })
         return schema  
     

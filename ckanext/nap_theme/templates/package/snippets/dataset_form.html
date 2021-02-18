@@ -524,30 +524,6 @@
       <div class="govuk-form-group">
         <label 
           class="govuk-label" 
-          for="field-description"
-        >
-          {{_("What does this dataset measure?")}}
-        </label>
-        <div id="field-description-hint" class="govuk-hint">
-          {{_("A description of what the dataset aims to measure not including the location, for example “Smart Sensor Traffic Counts”")}}
-        </div>
-        {% set error_class = 'govuk-input--error' if 'Description' in error_summary else '' %}
-        <span id="description-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Description']}}
-        </span>
-        <input 
-          class="govuk-input {{error_class}}" 
-          id="field-description" 
-          name="description" 
-          type="text"
-          value="{{form_data.description}}"
-        />
-      </div>
-
-      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label" 
           for="field-location"
         >
           {{_("What location does this dataset cover?")}}
@@ -567,7 +543,105 @@
           value="{{form_data.location}}"
         />
       </div>
+      
+      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+      <div class="govuk-form-group">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+          <h1 class="govuk-fieldset__heading">
+            {{_("What does this dataset measure?")}}
+          </h1>
+        </legend>
+        <div id="field-description-hint" class="govuk-hint">
+          {{_("A description of what the dataset aims to measure not including the location, for example “Smart Sensor Traffic Counts”")}}
+        </div>
+        {% set error_class = 'govuk-input--error' if 'Description' in error_summary else '' %}
+        <span id="description-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Description']}}
+        </span>
+        <input 
+          class="govuk-input {{error_class}}" 
+          id="field-description" 
+          name="description" 
+          type="text"
+          value="{{form_data.description}}"
+        />
+      </div>
+      {% set error_class = 'govuk-form-group--error' if 'Topics' in error_summary else '' %}
+      <div class="govuk-form-group {{error_class}}">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h1 class="govuk-fieldset__heading">
+            {{_("What does this dataset relate to?")}}
+          </h1>
+        </legend>
+        <div id="field-topics-hint" class="govuk-hint">
+          {{_("Select at least one topic that this dataset relates to. Use the search box to help filter the list, if you cannot find a matching topic, select “Other")}}
+        </div>
+        <span id="topics-error" class="govuk-error-message">
+          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Topics']}}
+        </span>
+        <div class="govuk-grid-row">
+        {% for column in h.nap_theme_get_topics()|slice(2) %}
+          <div class="govuk-grid-column-one-half">
+            <div class="govuk-checkboxes">
+              {% for topic in column%}
+                <div class="govuk-checkboxes__item govuk-body govuk-!-margin-bottom-4">
+                  <input class="govuk-checkboxes__input" id="topic_{{ topic|replace(" ", "_")|lower }}" name="topics" type="checkbox" value="{{ topic }}"
+                  {% if topic in form_data.topics %} checked {% endif %}>
+                  <label class="govuk-label govuk-checkboxes__label" for="topic_{{ topic|replace(" ", "_")|lower }}">
+                    {{ topic }}
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+        </div>
+      </div>
 
+      <div class="govuk-form-group">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h1 class="govuk-fieldset__heading">
+            {{_("Does this dataset relate to a specific transport mode? (optional)")}}
+          </h1>
+        </legend>
+        <div id="field-topics-hint" class="govuk-hint">
+          {{_("Select any transport modes that this dataset specifically relates to. Use the search box to help filter the list, if you cannot find a correct transport mode select “Other”.")}}
+        </div>
+        <div class="govuk-checkboxes">
+          {% for transport_mode in h.nap_theme_get_transport_modes() %}
+            <div class="govuk-checkboxes__item govuk-body govuk-!-margin-bottom-4">
+              <input class="govuk-checkboxes__input" id="transport_{{ transport_mode|replace(" ", "_")|lower }}" name="transport_modes" type="checkbox" value="{{ transport_mode }}"
+                  {% if transport_mode in form_data.transport_mode %} checked {% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="transport_{{ transport_mode|replace(" ", "_")|lower }}">
+                {{ transport_mode }}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="govuk-form-group">
+        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+          <h1 class="govuk-fieldset__heading">
+            {{_("Does this dataset relate to a specific road network? (optional)")}}
+          </h1>
+        </legend>
+        <div id="field-topics-hint" class="govuk-hint">
+          {{_("Select any road networks that this dataset specifically relates to. Use the search box to help filter the list, if you cannot find a correct transport mode select “Other”.")}}
+        </div>
+        <div class="govuk-checkboxes">
+          {% for road_network in h.nap_theme_get_road_networks() %}
+            <div class="govuk-checkboxes__item govuk-body govuk-!-margin-bottom-4">
+              <input class="govuk-checkboxes__input" id="road_{{ road_network|replace(" ", "_")|lower }}" name="road_networks" type="checkbox" value="{{ road_network }}"
+                  {% if road_network in form_data.road_networks %} checked {% endif %}>
+              <label class="govuk-label govuk-checkboxes__label" for="road_{{ road_network|replace(" ", "_")|lower }}">
+                {{ road_network }}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      
     <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
 
     <fieldset class="govuk-fieldset govuk-!-margin-bottom-6">
@@ -587,7 +661,7 @@
           covers, how it can be used and any other important information
           about it.")}}
         </div>
-                {% set error_class = 'govuk-input--error' if 'Notes' in error_summary else '' %}
+        {% set error_class = 'govuk-input--error' if 'Notes' in error_summary else '' %}
         <span id="notes-error" class="govuk-error-message">
           <span class="govuk-visually-hidden">Error:</span> {{error_summary['Notes']}}
         </span>

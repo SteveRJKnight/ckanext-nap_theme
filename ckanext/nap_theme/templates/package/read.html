@@ -17,6 +17,7 @@
   <a class="govuk-button" data-module="govuk-button" href="{{ url_for('dataset.edit', id=pkg_dict.name) }}">{{_('Edit')}}</a>
   {% endif %}
 {% endif %}
+
 <div class="govuk-tabs" data-module="govuk-tabs">
   <h2 class="govuk-tabs__title">
     {{ _('Contents') }}
@@ -33,8 +34,8 @@
       </a>
     </li>
     <li class="govuk-tabs__list-item">
-      <a class="govuk-tabs__tab" href="#about-publisher">
-        {{ _('About Publisher') }}
+      <a class="govuk-tabs__tab" href="#contact">
+        {{ _('Contact') }}
       </a>
     </li>
   </ul>
@@ -54,30 +55,34 @@
       {% endif %}
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">
-          {{ _('Published by:') }}
+          {{ _('Location:') }}
         </dt>
         <dd class="govuk-summary-list__value">
-          <a class="govuk-link" href="{% url_for _(pkg.organization.type ~ '.read'), id=pkg.organization.name %}">{{ pkg.organization.title}}</a>
+          {{ pkg.location}}
         </dd>
       </div>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">
-          {{ _('Last updated:') }}
+          {{ _('Topic:') }}
         </dt>
         <dd class="govuk-summary-list__value">
-          {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_modified %}
+          {% for topic in pkg.topics %}
+          <strong class="govuk-tag">
+            {{ topic }}
+          </strong>
+          {% endfor %}
         </dd>
       </div>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">
-          {{ _('Category:') }}
+          {{ _('Frequency of update:') }}
         </dt>
         <dd class="govuk-summary-list__value">
-          {% if pkg.groups|length > 0 %}
-            {{ pkg.groups[0].display_name }}
-          {% else %}
-            {{ _('None') }}
-          {% endif %}
+        {% if (pkg.update_frequency) %}
+          {{ sentence_case(pkg.update_frequency) }}
+        {% else %}
+        {{ _('None') }}
+        {% endif %}
         </dd>
       </div>
       <div class="govuk-summary-list__row">
@@ -94,6 +99,27 @@
             <span>{{ _('No Licence Provided') }}</span>
           {% endif %}
         {% endif %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Transport mode:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% for transport_mode in pkg.transport_modes %}
+            {{ transport_mode }}
+            {{ ", " if not loop.last else "" }}
+          {% endfor %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Road network:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% for road_network in pkg.road_networks %}
+            {{ road_network }}{{ ", " if not loop.last else "" }}
+          {% endfor %}
         </dd>
       </div>
       <div class="govuk-summary-list__row">
@@ -107,48 +133,33 @@
         </dd>
       </div>
     </dl>
-    <div class="govuk-!-margin-top-3">
-      <label class="govuk-label govuk-label--s" for="summary-text">
-        {{ _('Summary') }}
-      </label>
-      <div class="govuk-body" id="summary-text" name="summary-text">
-        {{ h.render_markdown(h.get_translated(pkg, 'notes')) }}
-      </div>
-      <div class="govuk-body govuk-!-margin-top-1 govuk-!-margin-bottom-0">
-        <a href="#!" data-folded="folded" class="govuk-link " data-module="summary-toggle" id="summary-toggle">Show full summary</a>
-      </div>
-      {% asset 'nap_theme/summary_expander_js' %}
-    </div>
+    
   </div>
   <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="more-details">
     <dl class="govuk-summary-list govuk-summary-list--no-border">
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">
-          {{ _('Version:') }}
+          {{ _('Location:') }}
         </dt>
         <dd class="govuk-summary-list__value">
-          {{ pkg.version }}
+          {{ pkg.location}}
         </dd>
       </div>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">
-          {{ _('Date first published:') }}
+          {{ _('Topic:') }}
         </dt>
         <dd class="govuk-summary-list__value">
-          {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_created %}
+          {% for topic in pkg.topics %}
+          <strong class="govuk-tag">
+            {{ topic }}
+          </strong>
+          {% endfor %}
         </dd>
       </div>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">
-          {{ _('Last updated:') }}
-        </dt>
-        <dd class="govuk-summary-list__value">
-          {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_modified %}
-        </dd>
-      </div>
-      <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">
-          {{ _('Update frequency:') }}
+          {{ _('Frequency of update:') }}
         </dt>
         <dd class="govuk-summary-list__value">
         {% if (pkg.update_frequency) %}
@@ -156,18 +167,6 @@
         {% else %}
         {{ _('None') }}
         {% endif %}
-        </dd>
-      </div>
-      <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">
-          {{ _('Category:') }}
-        </dt>
-        <dd class="govuk-summary-list__value">
-          {% if pkg.groups|length > 0 %}
-            {{ pkg.groups[0].display_name }}
-          {% else %}
-            {{ _('None') }}
-          {% endif %}
         </dd>
       </div>
       <div class="govuk-summary-list__row">
@@ -188,16 +187,75 @@
       </div>
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">
-          {{ _('Tags:') }}
+          {{ _('Transport mode:') }}
         </dt>
         <dd class="govuk-summary-list__value">
-          {% for tag in pkg.tags %}
-          <strong class="govuk-tag">
-            {{ tag.display_name }}
-          </strong>
+          {% for transport_mode in pkg.transport_modes %}
+            {{ transport_mode }}
+            {{ ", " if not loop.last else "" }}
           {% endfor %}
         </dd>
       </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Road network:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% for road_network in pkg.road_networks %}
+            {{ road_network }}{{ ", " if not loop.last else "" }}
+          {% endfor %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Publisher:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          <a class="govuk-link" href="{% url_for _(pkg.organization.type ~ '.read'), id=pkg.organization.name %}">{{ pkg.organization.title}}</a>
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Version:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {{ pkg.version }}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Date added:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_created %}
+        </dd>
+      </div>
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+          {{ _('Last updated:') }}
+        </dt>
+        <dd class="govuk-summary-list__value">
+          {% snippet 'snippets/local_friendly_datetime.html', datetime_obj=pkg.metadata_modified %}
+        </dd>
+      </div>
+    </dl>
+    {% if pkg.notes %}
+      <div class="govuk-!-margin-top-3">
+        <label class="govuk-label govuk-label--s" for="summary-text">
+          {{ _('Summary') }}
+        </label>
+        <div class="govuk-body" id="summary-text" name="summary-text">
+          {{ h.render_markdown(h.get_translated(pkg, 'notes')) }}
+        </div>
+        <div class="govuk-body govuk-!-margin-top-1 govuk-!-margin-bottom-0">
+          <a href="#!" data-folded="folded" class="govuk-link " data-module="summary-toggle" id="summary-toggle">Show full summary</a>
+        </div>
+        {% asset 'nap_theme/summary_expander_js' %}
+      </div>
+    {% endif %}
+  </div>
+  <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="contact">
+    <dl class="govuk-summary-list govuk-summary-list--no-border">
       <div class="govuk-summary-list__row">
         <dt class="govuk-summary-list__key">
           {{ _('Contact:') }}
@@ -212,18 +270,6 @@
         </dt>
         <dd class="govuk-summary-list__value">
           {{ pkg.author_email }}
-        </dd>
-      </div>
-    </dl>
-  </div>
-  <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="about-publisher">
-    <dl class="govuk-summary-list govuk-summary-list--no-border">
-      <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">
-          {{ _('Published by:') }}
-        </dt>
-        <dd class="govuk-summary-list__value">
-          <a class="govuk-link" href="{% url_for _(pkg.organization.type ~ '.read'), id=pkg.organization.name %}">{{ pkg.organization.title}}</a>
         </dd>
       </div>
     </dl>

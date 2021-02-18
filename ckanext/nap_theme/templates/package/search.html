@@ -132,36 +132,14 @@
               <div class="govuk-accordion__section-header">
                 <span class="filter-expander-icon"></span>
                 <h2 class="govuk-accordion__section-heading">
-                  <span class="govuk-accordion__section-button" id="accordion-default-heading-3">
-                    {{_("Tag")}}
+                  <span class="govuk-accordion__section-button" id="accordion-default-heading-4">
+                    {{_("Location")}}
                   </span>
                 </h2>
-                {% if fields_grouped.get('tags') %}
-                  <p class="govuk-body-s filter-selected">{{ fields_grouped.get('tags')|length }} selected</p>
-                {% endif %}
               </div>
-              <div id="accordion-default-content-3" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-3">
-                <div class="app-c-option-select__filter govuk-!-margin-bottom-6">    
-                  <label for="tag-filter" class="govuk-label govuk-visually-hidden">
-                    {{_("Filter Tags")}}
-                  </label>
-                  <input id="tag-filter" class="filter-input govuk-input" type="text">
-                </div>
-                {% set tags_available = h.nap_theme_get_tags() %}
-                {% set tags_params =  fields_grouped.get('tags') or [] %}
-                <div class="govuk-checkboxes filter-checkboxes">
-                  {% for tag in tags_available %}
-                    <div class="govuk-checkboxes__item">
-                      <input class="govuk-checkboxes__input" 
-                        id="tag_{{ tag.name }}" name="tags" 
-                        type="checkbox" value="{{ tag.name }}" onChange="this.form.submit()"
-                        {% if tag.name in tags_params %} checked {% endif %}>
-                      <label class="govuk-label govuk-checkboxes__label" for="tag_{{ tag.name }}">
-                        {{ tag.display_name }}
-                      </label>
-                    </div>
-                  {% endfor %}
-                </div>
+              {% set location_param =  fields_grouped.get('location') or [""] %}
+              <div id="accordion-default-content-4" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-4">
+                <input id="location-filter" class="filter-input govuk-input" type="text" name="location" value="{{location_param|first}}">
               </div>
             </div>
           </div>
@@ -237,7 +215,7 @@
     <div class="facet-tags" data-module="track-click">
       {% for filter_field in fields_grouped %}
       <div class="facet-tags__group">
-        {% for filter_value in fields_grouped.get(filter_field)%}
+        {% for filter_value in fields_grouped.get(filter_field) %}
           <div class="facet-tags__wrapper">
             <span class="facet-tags__preposition">
               {% if loop.index0 > 0 %}
@@ -246,8 +224,8 @@
               {{_('From')}}
               {% elif filter_field == 'update_frequency'%}
               {{_('Updates')}}
-              {% elif filter_field == 'tags' %}
-              {{_('About')}}
+              {% elif filter_field == 'location' %}
+              {{_('In')}}
               {% endif %}
             </span>
             <span class="facet-tag">
@@ -257,9 +235,9 @@
               {% elif filter_field == 'update_frequency' %}
                 {% set filter_display_name = h.list_dict_filter(frequencies, "value", "name", filter_value) %}
                 {% set filter_id = 'freq_' ~ filter_value %}
-              {% elif filter_field == 'tags' %}
-                {% set filter_display_name = h.list_dict_filter(tags_available, "name", "display_name", filter_value) %}
-                {% set filter_id = 'tag_' ~ filter_value %}
+              {% elif filter_field == 'location' %}
+                {% set filter_display_name = h.list_dict_filter(location, "name", "display_name", filter_value) %}
+                {% set filter_id = 'location-filter' %}
               {% endif %}
               <span class="facet-tag__text">{{ filter_display_name }}</span>
               <button type="button" class="facet-tag__remove" data-module="remove-filter-link" data-track-label="{{filter_display_name}}" data-facet="{{filter_field}}" data-value="{{filter_id}}" data-name="">✕</button>
