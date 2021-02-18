@@ -281,7 +281,9 @@ def _create_tag_vocabulary(vocab_name, tags):
         for tag in tags:
             data = {'name': tag, 'vocabulary_id': vocab['id']}
             toolkit.get_action('tag_create')(context, data)
-
+    except:
+        print('create tag error!!!!')
+    
 def _get_tag_vocabulary_tags(vocab_name):
     try:
         tag_list = toolkit.get_action('tag_list')
