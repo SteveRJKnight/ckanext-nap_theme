@@ -270,6 +270,8 @@ def custom_topics_validator(key, data, errors, context):
 
 def _create_tag_vocabulary(vocab_name, tags):
     user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
+    name=user['name']
+    print(f'user=[{user}] user name={name}')
     context = {'user': user['name']}
     try:
         data = {'id': vocab_name }
