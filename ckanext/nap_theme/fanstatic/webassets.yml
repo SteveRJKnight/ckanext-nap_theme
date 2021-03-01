@@ -1,19 +1,19 @@
 govuk_js:
-  output: nap_theme/%(version)s_govuk.js
+  output: ckanext-nap_theme/%(version)s_govuk.js
   contents:
     - govuk-frontend-3.9.1.min.js
 govuk_css:
   filters: cssrewrite
-  output: nap_theme/%(version)s_govuk.css
+  output: ckanext-nap_theme/%(version)s_govuk.css
   contents:
     - govuk-frontend-3.9.1.min.css
 nap_js:
-  output: nap_theme/%(version)s_nap_js.js
+  output: ckanext-nap_theme/%(version)s_nap_js.js
   contents:
     - custom.js
 nap_css:
   filters: cssrewrite
-  output: nap_theme/%(version)s_nap.css
+  output: ckanext-nap_theme/%(version)s_nap.css
   contents:
     - govuk-notify-cookie.css
     - ckanstyleoverride.css
