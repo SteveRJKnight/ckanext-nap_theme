@@ -4,36 +4,30 @@
 {% endblock %}
 {% block meta %}
   {{ super() }}
+  <!-- Google Analystics-->
+  <!-- Google Tag Manager (noscript) -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TQDBGHF" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>  
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-  
     gtag('config', 'G-0LCLXB2HEZ');
+    gtag('gtm.start', new Date().getTime(), {'event':'gtm.js'});
   </script>
-  <script>
-    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-TQDBGHF');
-  </script>
+  <link rel="stylesheet" href="https://cdnjs.Cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <!-- End Google Analystics-->
 {% endblock %}
 {% block styles %}
 	{% asset 'nap_theme/govuk_css' %}
+  {% asset 'nap_theme/nap_css' %}
 {% endblock %}
 {% block bodytag %}
-class="govuk-template__body" style="display:none;"
+class="govuk-template__body"
 {% endblock %}
 {% block scripts %}
   {% asset 'nap_theme/govuk_js' %}
-
-  {% block govuk_init %}
-    {% asset 'nap_theme/govuk_init_js' %}
-    {% asset 'nap_theme/custom_js' %}
-  	{% asset 'nap_theme/ckanstyleoverride_css' %}
-  	{% asset 'nap_theme/govuk_cookie_css' %}
-  	{% asset 'nap_theme/custom_css' %}
-  {% endblock %}
+  {% asset 'nap_theme/nap_js' %}
   {{ super() }}
 {% endblock %}

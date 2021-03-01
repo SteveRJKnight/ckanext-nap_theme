@@ -23,7 +23,7 @@
   background-color: #1d70b8;
   color: #fff;
   border-left-color:#1d70b8;
-  margin-left: -4px;
+  margin-left: -5px;
   width: 40px;
   height: 40px;
   box-shadow: none;
@@ -48,6 +48,12 @@
   border-right-width: 2px;
   margin-right: 0px;
   position:relative;
+  max-width: 85%;
+}
+@media (min-width:40.0625em) {
+  .nap-search-text {
+    max-width: 41ex;
+  }
 }
 
 .nap-search-text:focus {

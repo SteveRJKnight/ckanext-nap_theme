@@ -1,34 +1,27 @@
 govuk_js:
-  output: ckanext-nap_theme/%(version)s_govuk.js
+  output: nap_theme/%(version)s_govuk.js
   contents:
-    - govuk-frontend-3.9.1.js
+    - govuk-frontend-3.9.1.min.js
 govuk_css:
   filters: cssrewrite
-  output: ckanext-nap_theme/%(version)s_govuk.css
+  output: nap_theme/%(version)s_govuk.css
   contents:
     - govuk-frontend-3.9.1.min.css
-govuk_init_js:
-  output: ckanext-nap_theme/%(version)s_govuk_init.js
+nap_js:
+  output: nap_theme/%(version)s_nap_js.js
   contents:
-    - govuk.js
+    - custom.js
+nap_css:
+  filters: cssrewrite
+  output: nap_theme/%(version)s_nap.css
+  contents:
+    - govuk-notify-cookie.css
+    - ckanstyleoverride.css
+    - custom.css
 summary_expander_js:
   output: ckanext-nap_theme/%(version)s_summary_expander.js
   contents:
     - summary.js
-ckanstyleoverride_css:
-  filters: cssrewrite
-  output: ckanext-nap_theme/%(version)s_ckanstyleoverride.css
-  contents:
-    - ckanstyleoverride.css
-govuk_cookie_css:
-  filters: cssrewrite
-  output: ckanext-nap_theme/%(version)s_govuk_cookie.css
-  contents:
-    - govuk-notify-cookie.css
-custom_js:
-  output: ckanext-nap_theme/%(version)s_custom.js
-  contents:
-    - custom.js
 search_filter_js:
   output: ckanext-nap_theme/%(version)s_search_filter.js
   contents:

@@ -40,3 +40,11 @@
     font-size: 1.1875rem;
     margin-top: 0.5rem;
 }
+
+@media all and (min-width: 480px) {
+    .sticky {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 4rem;
+    }
+}

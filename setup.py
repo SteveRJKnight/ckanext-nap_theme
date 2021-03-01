@@ -18,20 +18,19 @@ setup(
     # http://packaging.python.org/en/latest/tutorial.html#version
     version='0.0.1',
 
-    description='''''',
+    description='''A GDS theme for the UK Government Department for Transport National Access Point NAP''',
     long_description=long_description,
-    long_description_content_type='text/x-rst',
-
+    long_description_content_type = 'text/markdown',
+    
     # The project's main homepage.
-    url='https://github.com//'\
-            'ckanext-nap_theme',
+    url='https://github.com/departmentfortransport/ckanext-dftnap',
 
     # Author details
-    author='''Robert McHugh''',
-    author_email='''''',
+    author='''Steve Knight''',
+    author_email='''steve.knight@madetech.com''',
 
     # Choose your license
-    license='AGPL',
+    license='License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -42,12 +41,11 @@ setup(
         'Development Status :: 4 - Beta',
 
         # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: GNU Affero General Public License v3 or'\
-        'later (AGPLv3+)',
+        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
     ],
 
 

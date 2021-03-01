@@ -1,829 +1,870 @@
 {% import 'macros/form.html' as form %} 
-{% if error_summary %}
-<div class="govuk-form-group govuk-form-group--error">
-{% else %}
-<div class="govuk-form-group">
-{% endif %}
-  <form 
-    action="{{ action }}" 
-    method="post"
-  >
-    <fieldset class="govuk-fieldset govuk-!-margin-bottom-6">
-      <!-- govuk errors -->
-      {% if error_summary %}
-      <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-        <h2 class="govuk-error-summary__title" id="error-summary-title">
-          There is a problem
-        </h2>
-        <div class="govuk-error-summary__body">
-          <ul class="govuk-list govuk-error-summary__list">
-            {% for key, error in error_summary.items() %}
-            <li>
-              <a href="#{{key.lower().replace(' ','-')}}-error">{{error}}</a>
+<div class="govuk-grid-row govuk-body govuk-!-margin-top-9">
+  <div class="govuk-grid-column-one-third govuk-body govuk-!-margin-bottom-9 sticky">
+    <ul class="govuk-list">
+      <li class="govuk-!-margin-bottom-4">
+        <a class="govuk-link" href="#about">{{_("About your dataset")}}</a>
+      </li>
+      <li class="govuk-!-margin-bottom-4">
+        <a class="govuk-link" href="#what-data-is-included">{{_("What data is included in your dataset?")}}</a>
+      </li>
+      <li class="govuk-!-margin-bottom-4">
+        <a class="govuk-link" href="#what-time-period">{{_("What time period does your dataset cover?")}}</a>
+      </li>
+      <li class="govuk-!-margin-bottom-4">
+        <a class="govuk-link" href="#location">{{_("What location was your dataset collected in?")}}</a>
+      </li>
+      <li class="govuk-!-margin-bottom-4">
+        <a class="govuk-link" href="#categorised">{{_("How is your dataset categorised?")}}</a>
+      </li>
+      <li class="govuk-!-margin-bottom-4">
+        <a class="govuk-link" href="#additional-information">{{_("Additional information")}}</a>
+      </li>
+      <li>
+        <a class="govuk-link" href="#contact-details">{{_("Contact details")}}</a>
+      </li>
+    </ul>
+  </div>
+  <div class="govuk-grid-column-two-thirds">
 
-            </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      {% endif %}
-      <!-- set empy pkg name-->
-      <input 
-        type="hidden" 
-        name="pkg_name" 
-        value="" 
-      />
-
-      <input 
-        type="hidden" 
-        name="save" 
-        value="go-metadata" 
-      />
-
-      <!-- Make all datasets public by default-->
-      <input 
-        id="field-private" 
-        name="private" 
-        type="hidden"
-        value="False" 
-      />
-      <!-- This is the dataset link url! it is set from the title!-->
-      <input 
-        id="field-name" 
-        name="name" 
-        type="hidden"
-        {% if pkg_dict is not defined %}
-          value="False"
-        {% else %}
-          value="{{pkg_dict.name}}"
-        {% endif %}
-      />
-
-      <!-- Set inital form stage
-      <input 
-        type="hidden" 
-        name="_ckan_phase" 
-        value="dataset_new_1" 
-      /> -->
-
-      <p class="govuk-heading-m govuk-!-margin-bottom-6">
-        {{_("Tell us where your data is so we can help people find it.")}}
-      </p>
-      <div class="govuk-form-group">
-        <h3 class="govuk-heading-m">{{_("Dataset details")}}</h3>
-        <label 
-          class="govuk-label" 
-          for="field-organizations"
-        >
-          {{_("Organisation")}}
-        </label>
-        {% set organizations_available = h.organizations_available('create_dataset') %}
-        {% set error_class = 'govuk-select--error' if 'Owner org' in error_summary else '' %}
-        <span id="owner-org-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Owner org']}}
-        </span>
-        {% if organizations_available|length > 1 %}
-          <select 
-            class="govuk-select {{error_class}}" 
-            id="field-organizations" 
-            name="owner_org"
-          >
-          {% if pkg_dict is not defined %}
-            <option value="" >{{_("Select a publisher")}}</option>
-          {% endif %}
-            {% for organization in organizations_available %}
-            {# get out first org from users list only if there is not an existing org #}
-            <option value="{{ organization.id }}"
-            {% if (organization.id == form_data.owner_org) %}
-                selected
-            {% endif %}
-            >{{ organization.display_name }}</option>
-            {% endfor %}          
-          </select>
-        {% else %}
-        <p class="govuk-body">{{_("This dataset will be published by your organisation")}} - {{ organizations_available[0]['display_name']}}</p>
-        <input 
-          id="field-organizations" 
-          name="owner_org" 
-          type="hidden"
-          value="{{ organizations_available[0]['id']}}"
-        />
-        {% endif %}
-      </div>
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label" 
-          for="field-title"
-        >
-          {{_("Title")}}
-        </label>
-        <div id="field-title-hint" class="govuk-hint">
-          {{_("A succinct title that describes what this dataset covers.")}}
-        </div>
-        {% set error_class = 'govuk-input--error' if 'Title' in error_summary else '' %}
-        <span id="title-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Title']}}
-        </span>
-        <input
-          class="govuk-input {{error_class}}"
-          id="field-title"
-          name="title"
-          type="text"
-          onchange="setUrl('field-title', 'field-name')"
-          value="{{form_data.title}}"
-        />
-      </div>
-
-      {% asset 'nap_theme/availability_contact_details_js' %}
-      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
-      {% set error_class = 'govuk-form-group--error' if 'Data available' in error_summary else '' %}
-      <div class="govuk-form-group">
-        <fieldset class="govuk-fieldset">
-          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-            <h1 class="govuk-fieldset__heading">
-              {{_("Is this data available?")}}
-            </h1>
-          </legend>
-          <div id="data-available-hint" class="govuk-hint">
-            Select one option.
+    {% if error_summary %}
+    <div class="govuk-form-group govuk-form-group--error">
+    {% else %}
+    <div class="govuk-form-group">
+    {% endif %}
+      <form 
+        action="{{ action }}" 
+        method="post"
+      >
+        <fieldset class="govuk-fieldset govuk-!-margin-bottom-6">
+          <!-- govuk errors -->
+          {% if error_summary %}
+          <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+            <h2 class="govuk-error-summary__title" id="error-summary-title">
+              There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+              <ul class="govuk-list govuk-error-summary__list">
+                {% for key, error in error_summary.items() %}
+                <li>
+                  <a href="#{{key.lower().replace(' ','-')}}-error">{{error}}</a>
+    
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
           </div>
-          <span id="url-error" class="govuk-error-message">
-            <span class="govuk-visually-hidden">Error:</span> {{error_summary['Data available']}}
-          </span>
-          <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
-            <div class="govuk-radios">
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" 
-                  id="data-available" 
-                  name="data_available" 
-                  type="radio" 
-                  value="yes"
-                  data-aria-controls="conditional-data-available"
-                  {% if (form_data.data_available == "yes") %}
-                  checked
-                  {% endif %}
-                  >
-                <label class="govuk-label govuk-radios__label" for="data-available">
-                  {{_("Yes")}}
-                </label>
-              </div>
-              <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-data-available">
-                <div class="govuk-form-group">
-                  <label 
-                    class="govuk-label" 
-                    for="field-url"
-                  >
-                    {{_("Dataset link")}}
-                  </label>
-                  <div id="field-url-hint" class="govuk-hint">
-                    {{_("The URL to the dataset or page that hosts the dataset. Please remember to include http:// or https://")}}
+          {% endif %}
+          <!-- set empy pkg name-->
+          <input 
+            type="hidden" 
+            name="pkg_name" 
+            value="" 
+          />
+    
+          <input 
+            type="hidden" 
+            name="save" 
+            value="go-metadata" 
+          />
+    
+          <!-- Make all datasets public by default-->
+          <input 
+            id="field-private" 
+            name="private" 
+            type="hidden"
+            value="False" 
+          />
+          <!-- This is the dataset link url! it is set from the title!-->
+          <input 
+            id="field-name" 
+            name="name" 
+            type="hidden"
+            {% if pkg_dict is not defined %}
+              value="False"
+            {% else %}
+              value="{{pkg_dict.name}}"
+            {% endif %}
+          />
+
+          <input 
+            id="field-start-date" 
+            name="start_date" 
+            type="hidden"
+            value="" 
+          />
+
+          <input 
+            id="field-end-date" 
+            name="end_date" 
+            type="hidden"
+            value="" 
+          />
+    
+          <!-- Set inital form stage
+          <input 
+            type="hidden" 
+            name="_ckan_phase" 
+            value="dataset_new_1" 
+          /> -->
+    
+          <div class="govuk-form-group">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading" id="about">
+                {{_("About your dataset")}}
+              </h1>
+            </legend>
+            <label 
+              class="govuk-label" 
+              for="field-organizations"
+            >
+            <h3 class="govuk-heading-s">
+              {{_("Organisation")}}
+            </h3>
+            </label>
+            {% set organizations_available = h.organizations_available('create_dataset') %}
+            {% set error_class = 'govuk-select--error' if 'Owner org' in error_summary else '' %}
+            <span id="owner-org-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{error_summary['Owner org']}}
+            </span>
+            {% if organizations_available|length > 1 %}
+              <select 
+                class="govuk-select {{error_class}}" 
+                id="field-organizations" 
+                name="owner_org"
+              >
+              {% if pkg_dict is not defined %}
+                <option value="" >{{_("Select a publisher")}}</option>
+              {% endif %}
+                {% for organization in organizations_available %}
+                {# get out first org from users list only if there is not an existing org #}
+                <option value="{{ organization.id }}"
+                {% if (organization.id == form_data.owner_org) %}
+                    selected
+                {% endif %}
+                >{{ organization.display_name }}</option>
+                {% endfor %}          
+              </select>
+            {% else %}
+            <p class="govuk-body">{{ organizations_available[0]['display_name']}}</p>
+            <input 
+              id="field-organizations" 
+              name="owner_org" 
+              type="hidden"
+              value="{{ organizations_available[0]['id']}}"
+            />
+            {% endif %}
+          </div>
+    
+          {% asset 'nap_theme/availability_contact_details_js' %}
+          {% set error_class = 'govuk-form-group--error' if 'Data available' in error_summary else '' %}
+          <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h3 class="govuk-heading-s">
+                  {{_("Is your data published online?")}}
+                </h3>
+              </legend>
+              <span id="url-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> {{error_summary['Data available']}}
+              </span>
+              <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
+                <div class="govuk-radios">
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" 
+                      id="data-available" 
+                      name="data_available" 
+                      type="radio" 
+                      value="yes"
+                      data-aria-controls="conditional-data-available"
+                      {% if (form_data.data_available == "yes") %}
+                      checked
+                      {% endif %}
+                      >
+                    <label class="govuk-label govuk-radios__label" for="data-available">
+                      {{_("Yes, it can be accessed via a website link")}}
+                    </label>
                   </div>
-                  {% set error_class = 'govuk-input--error' if 'URL' in error_summary else '' %}
-                  <span id="url-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['URL']}}
-                  </span>
-                  <input 
-                    class="govuk-input {{error_class}}" 
-                    id="field-url" 
-                    name="url" 
-                    type="text"
-                    value="{{form_data.url}}"
-                  />
+                  <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-data-available">
+                    <div class="govuk-form-group">
+                      <label 
+                        class="govuk-label" 
+                        for="field-url"
+                      >
+                        {{_("Website link to your dataset")}}
+                      </label>
+                      <div id="field-url-hint" class="govuk-hint">
+                        {{_("The URL to your dataset or the page that hosts your dataset. Please remember to include http:// or https://")}}
+                      </div>
+                      {% set error_class = 'govuk-input--error' if 'URL' in error_summary else '' %}
+                      <span id="url-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['URL']}}
+                      </span>
+                      <input 
+                        class="govuk-input {{error_class}}" 
+                        id="field-url" 
+                        name="url" 
+                        type="text"
+                        value="{{form_data.url}}"
+                      />
+                    </div>
+                  </div>
+                  <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" 
+                      id="data-available-2" 
+                      name="data_available" 
+                      type="radio" 
+                      value="no"
+                      {% if (form_data.data_available == "no") %}
+                      checked
+                      {% endif %}
+                      >
+                    <label class="govuk-label govuk-radios__label" for="data-available-2">
+                      {{_("No, I can provide contact details so people can contact me to access this dataset")}}
+                    </label>
+                  </div>
                 </div>
               </div>
-              <div class="govuk-radios__item">
-                <input class="govuk-radios__input" 
-                  id="data-available-2" 
-                  name="data_available" 
-                  type="radio" 
-                  value="no"
-                  {% if (form_data.data_available == "no") %}
-                  checked
-                  {% endif %}
-                  >
-                <label class="govuk-label govuk-radios__label" for="data-available-2">
-                  {{_("No")}}
-                </label>
-              </div>
-            </div>
+            </fieldset>
           </div>
-        </fieldset>
-      </div>
 
-      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
-      {% set error_class = 'govuk-form-group--error' if 'Regularly updated' in error_summary else '' %}
-      <div class="govuk-form-group {{error_class}}">
-        <fieldset class="govuk-fieldset" aria-describedby="regularly-updated-hint">
-          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-            <h1 class="govuk-fieldset__heading">
-              {{_("What period of time does this dataset cover?")}}
-            </h1>
-          </legend>
-          <legend class="govuk-fieldset__legend">
-            {{_("Does this dataset update regularly?")}}
-          </legend>
-          <div id="regularly-updated-hint" class="govuk-hint">
-            Select one option.
+          <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+          <div class="govuk-form-group">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading" id="what-data-is-included">
+                {{_("What data is included in your dataset?")}}
+              </h1>
+            </legend>
+            <div id="field-title-hint" class="govuk-hint">
+              {{_("Describe what is captured in your dataset. For example, “Smart Sensor Traffic Counts” or “Electric Vehicle Charging Points”.")}}
+            </div>
+            {% set error_class = 'govuk-input--error' if 'Title' in error_summary else '' %}
+            <span id="title-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{error_summary['Title']}}
+            </span>
+            <input
+              class="govuk-input {{error_class}}"
+              id="field-title"
+              name="title"
+              type="text"
+              onchange="setUrl('field-title', 'field-name')"
+              value="{{form_data.title}}"
+            />
+          </div>
+    
+          <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+          {% set error_class = 'govuk-form-group--error' if 'Regularly updated' in error_summary else '' %}
+          <div class="govuk-form-group {{error_class}}">
+            <fieldset class="govuk-fieldset" aria-describedby="regularly-updated-hint">
+              <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 class="govuk-fieldset__heading" id="what-time-period">
+                  {{_("What time period does your dataset cover?")}}
+                </h1>
+              </legend>
+              <legend class="govuk-fieldset__legend">
+                {{_("Does this dataset update regularly?")}}
+              </legend>
+              <span id="regularly-updated-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{error_summary['Regularly updated']}}
+              </span>
+              <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" 
+                    id="regularly-updated" 
+                    name="regularly_updated" 
+                    type="radio" 
+                    value="yes" 
+                    data-aria-controls="conditional-time-coverage"
+                    {% if (form_data.regularly_updated == "yes") %}
+                    checked
+                    {% endif %}
+                    >
+                  <label class="govuk-label govuk-radios__label" for="regularly-updated">
+                    {{_("My dataset is live or regularly updated")}}
+                  </label>
+                </div>
+                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-time-coverage">
+                  {% set error_class = 'govuk-form-group--error' if 'Update frequency' in error_summary else '' %}
+                  
+                  <div class="govuk-form-group {{error_class}}">
+                    <label 
+                      class="govuk-label" 
+                      for="field-update-frequency"
+                    >
+                      {{_("How often is this dataset updated?")}}
+                    </label>
+                    <span id="update-frequency-error" class="govuk-error-message">
+                      <span class="govuk-visually-hidden">Error:</span> {{error_summary['Update frequency']}}
+                    </span>
+                    <select 
+                      class="govuk-select" 
+                      id="field-update-frequency" 
+                      name="update_frequency"
+                    >
+                    {% set frequencies = [
+                      {'name': 'Live', 'value': 'live'},
+                      {'name': 'Daily', 'value': 'daily'},
+                      {'name': 'Weekly', 'value': 'weekly'},
+                      {'name': '2 Weekly', 'value': '2weekly'},
+                      {'name': '4 Weekly', 'value': '4weekly'},
+                      {'name': 'Monthly', 'value': 'monthly'},
+                      {'name': '6 Monthly', 'value': '6monthly'},
+                      {'name': 'Yearly', 'value': 'yearly'}] 
+                    %}
+                    <option value="" >{{_("Select the frequency of update")}}</option>
+                    {% for frequency in frequencies %}
+                      <option value="{{frequency.value}}"
+                      {% if (frequency.value == form_data.update_frequency) %}
+                          selected
+                      {% endif %}
+                      >{{frequency.name}}</option>
+                    {% endfor %}
+                    </select>
+                  </div>      
+    
+                  <div class="govuk-form-group">
+                    <fieldset class="govuk-fieldset" role="group" aria-describedby="regularly-updated-date-range-earliest-hint">
+                      <legend class="govuk-fieldset__legend">
+                        {{_("What is the earliest date this dataset covers (optional)")}}
+                      </legend>
+                      <div id="regularly-updated-earliest-hint" class="govuk-hint">
+                        {{_("For example, 19 01 2011")}}
+                      </div>
+                      <div class="govuk-date-input" id="regularly-updated-earliest">
+                        <div class="govuk-date-input__item">
+                          <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="regularly-updated-earliest-day">
+                              Day
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-2" 
+                              id="regularly-updated-earliest-day" 
+                              name="regularly_updated_earliest_day" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.regularly_updated_earliest_day}}"
+                              >
+                            </div>
+                        </div>
+                        <div class="govuk-date-input__item">
+                          <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="regularly-updated-date-range-earliest-month">
+                              Month
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-2" 
+                              id="regularly-updated-earliest-month" 
+                              name="regularly_updated_earliest_month" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.regularly_updated_earliest_month}}"
+                              >
+                          </div>
+                        </div>
+                        <div class="govuk-date-input__item">
+                          <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="regularly-updated-earliest-year">
+                              Year
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-4" 
+                              id="regularly-updated-earliest-year" 
+                              name="regularly_updated_earliest_year" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.regularly_updated_earliest_year}}"
+                              >
+                            </div>
+                        </div>
+                      </div>
+                  
+                    </fieldset>
+                  </div>
+                </div>
+                <div class="govuk-radios__item">
+                  <input class="govuk-radios__input" 
+                    id="regularly-updated-2" 
+                    name="regularly_updated" 
+                    type="radio" 
+                    value="no" 
+                    data-aria-controls="conditional-time-coverage-2"
+                    {% if (form_data.regularly_updated == "no") %}
+                    checked
+                    {% endif %}
+                    >
+                  <label class="govuk-label govuk-radios__label" for="regularly-updated-2">
+                    {{_("No, this data covers a specific time period and has an end date")}}
+                  </label>
+                </div>
+                <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-time-coverage-2">
+                  {% set error_class = 'govuk-form-group--error' if 'Date range latest' in error_summary else '' %}
+                  <div class="govuk-form-group {{ error_class }}">
+                    <fieldset class="govuk-fieldset" role="group" aria-describedby="date-range-latest-hint">
+                      <legend class="govuk-fieldset__legend">
+                        {{_("What is the latest date this dataset covers")}}
+                      </legend>
+                      <div id="date-range-latest-hint" class="govuk-hint">
+                        {{_("For example if the dataset covers 19/01/2011 - 19/08/2011, enter 19 08 2011")}}
+                      </div>
+                      <span id="date_range_latest-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range latest']}}
+                      </span>
+                      <span id="date-range-latest-day-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range latest day']}}
+                      </span>
+                      <span id="date-range-latest-month-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range latest month']}}
+                      </span>
+                      <span id="date-range-latest-year-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range latest year']}}
+                      </span>
+                      <div class="govuk-date-input" id="date-range-latest">
+                        <div class="govuk-date-input__item">
+                          {% set error_class = 'govuk-form-group--error' if 'Date range latest day' in error_summary else '' %}
+                          {% set error_input_class = 'govuk-input--error' if 'Date range latest day' in error_summary else '' %}
+                          <div class="govuk-form-group {{ error_class }}">
+                            <label class="govuk-label govuk-date-input__label" for="date-range-latest-day">
+                              Day
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-2 {{ error_input_class }}" 
+                              id="date-range-latest-day" 
+                              name="date_range_latest_day" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.date_range_latest_day}}"
+                              >
+                            </div>
+                        </div>
+                        <div class="govuk-date-input__item">
+                          {% set error_class = 'govuk-form-group--error' if 'Date range latest month' in error_summary else '' %}
+                          {% set error_input_class = 'govuk-input--error' if 'Date range latest month' in error_summary else '' %}
+                          <div class="govuk-form-group {{ error_class }}">
+                            <label class="govuk-label govuk-date-input__label" for="date-range-latest-month">
+                              Month
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-2 {{ error_input_class }}" 
+                              id="date-range-latest-month" 
+                              name="date_range_latest_month" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.date_range_latest_month}}"
+                              >
+                            </div>
+                        </div>
+                        <div class="govuk-date-input__item">
+                          {% set error_class = 'govuk-form-group--error' if 'Date range latest year' in error_summary else '' %}
+                          {% set error_input_class = 'govuk-input--error' if 'Date range latest year' in error_summary else '' %}
+                          <div class="govuk-form-group {{ error_class }}">
+                            <label class="govuk-label govuk-date-input__label" for="date-range-latest-year">
+                              Year
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-4 {{ error_input_class }}" 
+                              id="date-range-latest-year" 
+                              name="date_range_latest_year" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.date_range_latest_year}}"
+                              >
+                            </div>
+                        </div>
+                      </div>
+                    </fieldset>
+                  </div>
+    
+                  {% set error_class = 'govuk-form-group--error' if 'Date range earliest' in error_summary else '' %}
+                  <div class="govuk-form-group {{ error_class }}"">
+                    <fieldset class="govuk-fieldset" role="group" aria-describedby="date-range-earliest-hint">
+                      <legend class="govuk-fieldset__legend">
+                        {{_("What is the earliest date this dataset covers")}}
+                      </legend>
+                      <div id="date-range-earliest-hint" class="govuk-hint">
+                        {{_("For example if the dataset covers 19/01/2011 - 19/08/2011, enter 19 01 2011")}}
+                      </div>
+                      <span id="date-range-earliest-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range earliest']}}
+                      </span>
+                      <span id="date-range-earliest-day-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range earliest day']}}
+                      </span>
+                      <span id="date-range-earliest-month-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range earliest month']}}
+                      </span>
+                      <span id="date-range-earliest-year-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range earliest year']}}
+                      </span>
+                      <div class="govuk-date-input" id="date-range-earliest">
+                        <div class="govuk-date-input__item">
+                          {% set error_class = 'govuk-form-group--error' if 'Date range earliest day' in error_summary else '' %}
+                          {% set error_input_class = 'govuk-input--error' if 'Date range earliest day' in error_summary else '' %}
+                          <div class="govuk-form-group {{ error_class }}">
+                            <label class="govuk-label govuk-date-input__label" for="date-range-earliest-day">
+                              Day
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-2 {{ error_input_class }}" 
+                              id="date-range-earliest-day" 
+                              name="date_range_earliest_day" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.date_range_earliest_day}}"
+                              >
+                          </div>
+                        </div>
+                        <div class="govuk-date-input__item">
+                          {% set error_class = 'govuk-form-group--error' if 'Date range earliest month' in error_summary else '' %}
+                          {% set error_input_class = 'govuk-input--error' if 'Date range earliest month' in error_summary else '' %}
+                          <div class="govuk-form-group {{ error_class }}">
+                            <label class="govuk-label govuk-date-input__label" for="date-range-earliest-month">
+                              Month
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-2 {{ error_input_class }}" 
+                              id="date-range-earliest-month" 
+                              name="date_range_earliest_month" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.date_range_earliest_month}}"
+                              >
+                          </div>
+                        </div>
+                        <div class="govuk-date-input__item">
+                          {% set error_class = 'govuk-form-group--error' if 'Date range earliest year' in error_summary else '' %}
+                          {% set error_input_class = 'govuk-input--error' if 'Date range earliest year' in error_summary else '' %}
+                          <div class="govuk-form-group {{ error_class }}">
+                            <label class="govuk-label govuk-date-input__label" for="date-range-earliest-year">
+                              Year
+                            </label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-4 {{ error_input_class }}" 
+                              id="date-range-earliest-year" 
+                              name="date_range_earliest_year" 
+                              type="text" 
+                              pattern="[0-9]*" 
+                              inputmode="numeric"
+                              value="{{form_data.date_range_earliest_year}}"
+                              >
+                            </div>
+                        </div>
+                      </div>
+                  
+                    </fieldset>
+                  </div>
+          
+                </div>
+              </div>
+            </fieldset>
+          </div>
+    
+          <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+          <div class="govuk-form-group">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading" id="location">
+                {{_("What location was your dataset collected in?")}}
+              </h1>
+            </legend>
+            <div id="field-location-hint" class="govuk-hint">
+              {{_("Enter a specific location such as a country, region, town, city or other area")}}
+            </div>
+            {% set error_class = 'govuk-input--error' if 'Location' in error_summary else '' %}
+            <span id="location-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{error_summary['Location']}}
+            </span>
+            <input 
+              class="govuk-input {{error_class}}" 
+              id="field-location" 
+              name="location" 
+              type="text"
+              value="{{form_data.location}}"
+            />
           </div>
           
-          <span id="regularly-updated-error" class="govuk-error-message">
-            <span class="govuk-visually-hidden">Error:</span> {{error_summary['Regularly updated']}}
-          </span>
-          <div class="govuk-radios govuk-radios--conditional" data-module="govuk-radios">
-            <div class="govuk-radios__item">
-              <input class="govuk-radios__input" 
-                id="regularly-updated" 
-                name="regularly_updated" 
-                type="radio" 
-                value="yes" 
-                data-aria-controls="conditional-time-coverage"
-                {% if (form_data.regularly_updated == "yes") %}
-                checked
-                {% endif %}
-                >
-              <label class="govuk-label govuk-radios__label" for="regularly-updated">
-                {{_("Yes, this dataset is an API; updating live; or is regularly updated")}}
-              </label>
+          <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+          {% set error_class = 'govuk-form-group--error' if 'Topics' in error_summary else '' %}
+          <div class="govuk-form-group {{error_class}}">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h1 class="govuk-fieldset__heading" id="categorised">
+                {{_("How is your dataset categorised?")}}
+              </h1>
+            </legend>
+            <label 
+              class="govuk-label" 
+              for="field-topics"
+            >
+              <h3 class="govuk-heading-s">
+                {{_("What is your dataset about?")}}
+              </h3>
+            </label>
+            <div id="field-topics-hint" class="govuk-hint">
+              {{_("Select at least one topic that this dataset relates to. Use the search box to help filter the list, if you cannot find a matching topic, select “Other")}}
             </div>
-            <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-time-coverage">
-              {% set error_class = 'govuk-form-group--error' if 'Update frequency' in error_summary else '' %}
-              
-              <div class="govuk-form-group {{error_class}}">
-                <label 
-                  class="govuk-label" 
-                  for="field-update-frequency"
-                >
-                  {{_("How often is this dataset updated? (optional)")}}
-                </label>
-                <span id="update-frequency-error" class="govuk-error-message">
-                  <span class="govuk-visually-hidden">Error:</span> {{error_summary['Update frequency']}}
-                </span>
-                <select 
-                  class="govuk-select" 
-                  id="field-update-frequency" 
-                  name="update_frequency"
-                >
-                {% set frequencies = [
-                  {'name': 'Live', 'value': 'live'},
-                  {'name': 'Daily', 'value': 'daily'},
-                  {'name': 'Weekly', 'value': 'weekly'},
-                  {'name': '2 Weekly', 'value': '2weekly'},
-                  {'name': '4 Weekly', 'value': '4weekly'},
-                  {'name': 'Monthly', 'value': 'monthly'},
-                  {'name': '6 Monthly', 'value': '6monthly'},
-                  {'name': 'Yearly', 'value': 'yearly'}] 
-                %}
-                <option value="" >{{_("Select the frequency of update")}}</option>
-                {% for frequency in frequencies %}
-                  <option value="{{frequency.value}}"
-                  {% if (frequency.value == form_data.update_frequency) %}
-                      selected
-                  {% endif %}
-                  >{{frequency.name}}</option>
-                {% endfor %}
-                </select>
-              </div>      
-
-              <div class="govuk-form-group">
-                <fieldset class="govuk-fieldset" role="group" aria-describedby="regularly-updated-date-range-earliest-hint">
-                  <legend class="govuk-fieldset__legend">
-                    {{_("What is the earliest date this dataset covers (optional)")}}
-                  </legend>
-                  <div id="regularly-updated-earliest-hint" class="govuk-hint">
-                    {{_("For example if the dataset covers 19/01/2011 - 19/08/2011, enter 19 01 2011")}}
-                  </div>
-                  <div class="govuk-date-input" id="regularly-updated-earliest">
-                    <div class="govuk-date-input__item">
-                      <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="regularly-updated-earliest-day">
-                          Day
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2" 
-                          id="regularly-updated-earliest-day" 
-                          name="regularly_updated_earliest_day" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.regularly_updated_earliest_day}}"
-                          >
-                        </div>
+            <span id="topics-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{error_summary['Topics']}}
+            </span>
+            <div class="govuk-grid-row">
+            {% for column in h.nap_theme_get_topics()|slice(2) %}
+              <div class="govuk-grid-column-one-half">
+                <div class="govuk-checkboxes">
+                  {% for topic in column%}
+                    <div class="govuk-checkboxes__item govuk-body govuk-!-margin-bottom-4">
+                      <input class="govuk-checkboxes__input" id="topic_{{ topic|replace(" ", "_")|lower }}" name="topics" type="checkbox" value="{{ topic }}"
+                      {% if topic in form_data.topics %} checked {% endif %}>
+                      <label class="govuk-label govuk-checkboxes__label" for="topic_{{ topic|replace(" ", "_")|lower }}">
+                        {{ topic }}
+                      </label>
                     </div>
-                    <div class="govuk-date-input__item">
-                      <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="regularly-updated-date-range-earliest-month">
-                          Month
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2" 
-                          id="regularly-updated-earliest-month" 
-                          name="regularly_updated_earliest_month" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.regularly_updated_earliest_month}}"
-                          >
-                      </div>
-                    </div>
-                    <div class="govuk-date-input__item">
-                      <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="regularly-updated-earliest-year">
-                          Year
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-4" 
-                          id="regularly-updated-earliest-year" 
-                          name="regularly_updated_earliest_year" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.regularly_updated_earliest_year}}"
-                          >
-                        </div>
-                    </div>
-                  </div>
-              
-                </fieldset>
+                  {% endfor %}
+                </div>
               </div>
-      
-            </div>
-            <div class="govuk-radios__item">
-              <input class="govuk-radios__input" 
-                id="regularly-updated-2" 
-                name="regularly_updated" 
-                type="radio" 
-                value="no" 
-                data-aria-controls="conditional-time-coverage-2"
-                {% if (form_data.regularly_updated == "no") %}
-                checked
-                {% endif %}
-                >
-              <label class="govuk-label govuk-radios__label" for="regularly-updated-2">
-                {{_("No, this data covers a specific time period and has an end date")}}
-              </label>
-            </div>
-            <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-time-coverage-2">
-              {% set error_class = 'govuk-form-group--error' if 'Date range latest' in error_summary else '' %}
-              <div class="govuk-form-group {{ error_class }}">
-                <fieldset class="govuk-fieldset" role="group" aria-describedby="date-range-latest-hint">
-                  <legend class="govuk-fieldset__legend">
-                    {{_("What is the latest date this dataset covers")}}
-                  </legend>
-                  <div id="date-range-latest-hint" class="govuk-hint">
-                    {{_("For example if the dataset covers 19/01/2011 - 19/08/2011, enter 19 08 2011")}}
-                  </div>
-                  <span id="date_range_latest-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range latest']}}
-                  </span>
-                  <span id="date-range-latest-day-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range latest day']}}
-                  </span>
-                  <span id="date-range-latest-month-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range latest month']}}
-                  </span>
-                  <span id="date-range-latest-year-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range latest year']}}
-                  </span>
-                  <div class="govuk-date-input" id="date-range-latest">
-                    <div class="govuk-date-input__item">
-                      {% set error_class = 'govuk-form-group--error' if 'Date range latest day' in error_summary else '' %}
-                      {% set error_input_class = 'govuk-input--error' if 'Date range latest day' in error_summary else '' %}
-                      <div class="govuk-form-group {{ error_class }}">
-                        <label class="govuk-label govuk-date-input__label" for="date-range-latest-day">
-                          Day
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 {{ error_input_class }}" 
-                          id="date-range-latest-day" 
-                          name="date_range_latest_day" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.date_range_latest_day}}"
-                          >
-                        </div>
-                    </div>
-                    <div class="govuk-date-input__item">
-                      {% set error_class = 'govuk-form-group--error' if 'Date range latest month' in error_summary else '' %}
-                      {% set error_input_class = 'govuk-input--error' if 'Date range latest month' in error_summary else '' %}
-                      <div class="govuk-form-group {{ error_class }}">
-                        <label class="govuk-label govuk-date-input__label" for="date-range-latest-month">
-                          Month
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 {{ error_input_class }}" 
-                          id="date-range-latest-month" 
-                          name="date_range_latest_month" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.date_range_latest_month}}"
-                          >
-                        </div>
-                    </div>
-                    <div class="govuk-date-input__item">
-                      {% set error_class = 'govuk-form-group--error' if 'Date range latest year' in error_summary else '' %}
-                      {% set error_input_class = 'govuk-input--error' if 'Date range latest year' in error_summary else '' %}
-                      <div class="govuk-form-group {{ error_class }}">
-                        <label class="govuk-label govuk-date-input__label" for="date-range-latest-year">
-                          Year
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-4 {{ error_input_class }}" 
-                          id="date-range-latest-year" 
-                          name="date_range_latest_year" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.date_range_latest_year}}"
-                          >
-                        </div>
-                    </div>
-                  </div>
-                </fieldset>
-              </div>
-
-              {% set error_class = 'govuk-form-group--error' if 'Date range earliest' in error_summary else '' %}
-              <div class="govuk-form-group {{ error_class }}"">
-                <fieldset class="govuk-fieldset" role="group" aria-describedby="date-range-earliest-hint">
-                  <legend class="govuk-fieldset__legend">
-                    {{_("What is the earliest date this dataset covers")}}
-                  </legend>
-                  <div id="date-range-earliest-hint" class="govuk-hint">
-                    {{_("For example if the dataset covers 19/01/2011 - 19/08/2011, enter 19 01 2011")}}
-                  </div>
-                  <span id="date-range-earliest-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range earliest']}}
-                  </span>
-                  <span id="date-range-earliest-day-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range earliest day']}}
-                  </span>
-                  <span id="date-range-earliest-month-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range earliest month']}}
-                  </span>
-                  <span id="date-range-earliest-year-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span> {{error_summary['Date range earliest year']}}
-                  </span>
-                  <div class="govuk-date-input" id="date-range-earliest">
-                    <div class="govuk-date-input__item">
-                      {% set error_class = 'govuk-form-group--error' if 'Date range earliest day' in error_summary else '' %}
-                      {% set error_input_class = 'govuk-input--error' if 'Date range earliest day' in error_summary else '' %}
-                      <div class="govuk-form-group {{ error_class }}">
-                        <label class="govuk-label govuk-date-input__label" for="date-range-earliest-day">
-                          Day
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 {{ error_input_class }}" 
-                          id="date-range-earliest-day" 
-                          name="date_range_earliest_day" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.date_range_earliest_day}}"
-                          >
-                      </div>
-                    </div>
-                    <div class="govuk-date-input__item">
-                      {% set error_class = 'govuk-form-group--error' if 'Date range earliest month' in error_summary else '' %}
-                      {% set error_input_class = 'govuk-input--error' if 'Date range earliest month' in error_summary else '' %}
-                      <div class="govuk-form-group {{ error_class }}">
-                        <label class="govuk-label govuk-date-input__label" for="date-range-earliest-month">
-                          Month
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 {{ error_input_class }}" 
-                          id="date-range-earliest-month" 
-                          name="date_range_earliest_month" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.date_range_earliest_month}}"
-                          >
-                      </div>
-                    </div>
-                    <div class="govuk-date-input__item">
-                      {% set error_class = 'govuk-form-group--error' if 'Date range earliest year' in error_summary else '' %}
-                      {% set error_input_class = 'govuk-input--error' if 'Date range earliest year' in error_summary else '' %}
-                      <div class="govuk-form-group {{ error_class }}">
-                        <label class="govuk-label govuk-date-input__label" for="date-range-earliest-year">
-                          Year
-                        </label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-4 {{ error_input_class }}" 
-                          id="date-range-earliest-year" 
-                          name="date_range_earliest_year" 
-                          type="text" 
-                          pattern="[0-9]*" 
-                          inputmode="numeric"
-                          value="{{form_data.date_range_earliest_year}}"
-                          >
-                        </div>
-                    </div>
-                  </div>
-              
-                </fieldset>
-              </div>
-      
+            {% endfor %}
             </div>
           </div>
-        </fieldset>
-      </div>
-
-      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label" 
-          for="field-location"
-        >
-          {{_("What location does this dataset cover?")}}
-        </label>
-        <div id="field-location-hint" class="govuk-hint">
-          {{_("Enter a specific location such as a country, region, town, city or other area")}}
-        </div>
-        {% set error_class = 'govuk-input--error' if 'Location' in error_summary else '' %}
-        <span id="location-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Location']}}
-        </span>
-        <input 
-          class="govuk-input {{error_class}}" 
-          id="field-location" 
-          name="location" 
-          type="text"
-          value="{{form_data.location}}"
-        />
-      </div>
-      
-      <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
-      <div class="govuk-form-group">
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-          <h1 class="govuk-fieldset__heading">
-            {{_("What does this dataset measure?")}}
-          </h1>
-        </legend>
-        <div id="field-description-hint" class="govuk-hint">
-          {{_("A description of what the dataset aims to measure not including the location, for example “Smart Sensor Traffic Counts”")}}
-        </div>
-        {% set error_class = 'govuk-input--error' if 'Description' in error_summary else '' %}
-        <span id="description-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Description']}}
-        </span>
-        <input 
-          class="govuk-input {{error_class}}" 
-          id="field-description" 
-          name="description" 
-          type="text"
-          value="{{form_data.description}}"
-        />
-      </div>
-      {% set error_class = 'govuk-form-group--error' if 'Topics' in error_summary else '' %}
-      <div class="govuk-form-group {{error_class}}">
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-          <h1 class="govuk-fieldset__heading">
-            {{_("What does this dataset relate to?")}}
-          </h1>
-        </legend>
-        <div id="field-topics-hint" class="govuk-hint">
-          {{_("Select at least one topic that this dataset relates to. Use the search box to help filter the list, if you cannot find a matching topic, select “Other")}}
-        </div>
-        <span id="topics-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Topics']}}
-        </span>
-        <div class="govuk-grid-row">
-        {% for column in h.nap_theme_get_topics()|slice(2) %}
-          <div class="govuk-grid-column-one-half">
+    
+          <div class="govuk-form-group">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+              <h3 class="govuk-fieldset__heading">
+                {{_("Does this dataset relate to a specific transport mode? (optional)")}}
+              </h3>
+            </legend>
+            <div id="field-transport-hint" class="govuk-hint">
+              {{_("Select any transport modes that this dataset specifically relates to. Use the search box to help filter the list, if you cannot find a correct transport mode select “Other”.")}}
+            </div>
             <div class="govuk-checkboxes">
-              {% for topic in column%}
+              {% for transport_mode in h.nap_theme_get_transport_modes() %}
                 <div class="govuk-checkboxes__item govuk-body govuk-!-margin-bottom-4">
-                  <input class="govuk-checkboxes__input" id="topic_{{ topic|replace(" ", "_")|lower }}" name="topics" type="checkbox" value="{{ topic }}"
-                  {% if topic in form_data.topics %} checked {% endif %}>
-                  <label class="govuk-label govuk-checkboxes__label" for="topic_{{ topic|replace(" ", "_")|lower }}">
-                    {{ topic }}
+                  <input class="govuk-checkboxes__input" id="transport_{{ transport_mode|replace(" ", "_")|lower }}" name="transport_modes" type="checkbox" value="{{ transport_mode }}"
+                      {% if transport_mode in form_data.transport_mode %} checked {% endif %}>
+                  <label class="govuk-label govuk-checkboxes__label" for="transport_{{ transport_mode|replace(" ", "_")|lower }}">
+                    {{ transport_mode }}
                   </label>
                 </div>
               {% endfor %}
             </div>
           </div>
-        {% endfor %}
-        </div>
-      </div>
-
-      <div class="govuk-form-group">
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-          <h1 class="govuk-fieldset__heading">
-            {{_("Does this dataset relate to a specific transport mode? (optional)")}}
-          </h1>
-        </legend>
-        <div id="field-topics-hint" class="govuk-hint">
-          {{_("Select any transport modes that this dataset specifically relates to. Use the search box to help filter the list, if you cannot find a correct transport mode select “Other”.")}}
-        </div>
-        <div class="govuk-checkboxes">
-          {% for transport_mode in h.nap_theme_get_transport_modes() %}
-            <div class="govuk-checkboxes__item govuk-body govuk-!-margin-bottom-4">
-              <input class="govuk-checkboxes__input" id="transport_{{ transport_mode|replace(" ", "_")|lower }}" name="transport_modes" type="checkbox" value="{{ transport_mode }}"
-                  {% if transport_mode in form_data.transport_mode %} checked {% endif %}>
-              <label class="govuk-label govuk-checkboxes__label" for="transport_{{ transport_mode|replace(" ", "_")|lower }}">
-                {{ transport_mode }}
-              </label>
+    
+          <div class="govuk-form-group">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+              <h3 class="govuk-fieldset__heading">
+                {{_("Does this dataset relate to a specific road network? (optional)")}}
+              </h3>
+            </legend>
+            <div id="field-road-hint" class="govuk-hint">
+              {{_("Select any road networks that this dataset specifically relates to. Use the search box to help filter the list, if you cannot find a correct transport mode select “Other”.")}}
             </div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div class="govuk-form-group">
-        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-          <h1 class="govuk-fieldset__heading">
-            {{_("Does this dataset relate to a specific road network? (optional)")}}
-          </h1>
-        </legend>
-        <div id="field-topics-hint" class="govuk-hint">
-          {{_("Select any road networks that this dataset specifically relates to. Use the search box to help filter the list, if you cannot find a correct transport mode select “Other”.")}}
-        </div>
-        <div class="govuk-checkboxes">
-          {% for road_network in h.nap_theme_get_road_networks() %}
-            <div class="govuk-checkboxes__item govuk-body govuk-!-margin-bottom-4">
-              <input class="govuk-checkboxes__input" id="road_{{ road_network|replace(" ", "_")|lower }}" name="road_networks" type="checkbox" value="{{ road_network }}"
-                  {% if road_network in form_data.road_networks %} checked {% endif %}>
-              <label class="govuk-label govuk-checkboxes__label" for="road_{{ road_network|replace(" ", "_")|lower }}">
-                {{ road_network }}
-              </label>
+            <div class="govuk-checkboxes">
+              {% for road_network in h.nap_theme_get_road_networks() %}
+                <div class="govuk-checkboxes__item govuk-body govuk-!-margin-bottom-4">
+                  <input class="govuk-checkboxes__input" id="road_{{ road_network|replace(" ", "_")|lower }}" name="road_networks" type="checkbox" value="{{ road_network }}"
+                      {% if road_network in form_data.road_networks %} checked {% endif %}>
+                  <label class="govuk-label govuk-checkboxes__label" for="road_{{ road_network|replace(" ", "_")|lower }}">
+                    {{ road_network }}
+                  </label>
+                </div>
+              {% endfor %}
             </div>
-          {% endfor %}
-        </div>
-      </div>
-      
-    <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
-
-    <fieldset class="govuk-fieldset govuk-!-margin-bottom-6">
-      <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-        <h2 class="govuk-fieldset__heading">{{_("Additional information")}}</h2>
-      </legend>
-
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label govuk-label" 
-          for="field-notes"
+          </div>
+          
+        <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+    
+        <fieldset class="govuk-fieldset govuk-!-margin-bottom-6">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h2 class="govuk-fieldset__heading" id="additional-information">
+              {{_("Additional information")}}
+            </h2>
+          </legend>
+    
+          <div class="govuk-form-group">
+            <label 
+              class="govuk-label" 
+              for="field-notes"
+            >
+            <h4 class="govuk-heading-s"> 
+              {{_("Summary (optional)")}}
+            </h4>
+            </label>
+            <div id="field-notes-hint" class="govuk-hint">
+              {{_("Provide a short summary about your dataset. Explain what it covers, how it can be used and any other important information that a person using your dataset might find helpful.")}}
+            </div>
+            {% set error_class = 'govuk-input--error' if 'Notes' in error_summary else '' %}
+            <span id="notes-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{error_summary['Notes']}}
+            </span>
+            <textarea
+              class="govuk-textarea {{error_class}}"
+              id="field-notes"
+              name="notes"
+              rows="5"
+              aria-describedby="field-notes-hint">{{form_data.notes}}</textarea>
+          </div>
+    
+          <div class="govuk-form-group">
+            <label 
+              class="govuk-label" 
+              for="field-formats"
+            >
+            <h4 class="govuk-heading-s"> 
+              {{_("What format(s) is this dataset in? (optional)")}}
+            </h4>
+            </label>
+            <div id="field-data-formats-hint" class="govuk-hint">
+              {{_("List the available format(s) for your dataset. Multiple entries must be separated by commas (for example: csv, xml, json, xls).")}}
+            </div>
+            <input 
+              class="govuk-input" 
+              id="field-data-formats" 
+              name="data_formats" 
+              type="text"
+              value="{{form_data.data_formats}}"
+            />
+          </div> 
+    
+          <div class="govuk-form-group">
+            <label 
+              class="govuk-label" 
+              for="field-license"
+            >
+            <h4 class="govuk-heading-s"> 
+              {{_("Licence (optional)")}}
+            </h4>
+            </label>
+            <div id="field-license-hint" class="govuk-hint">
+              {{_("Select the license that is needed to access your dataset.")}}
+            </div>
+            <select 
+              class="govuk-select" 
+              id="field-license" 
+              name="license_id" 
+            >
+              <option value="" >{{_("Please select the licence")}}</option>
+              {% set licences = [
+                {'name': 'Creative Commons Attribution', 'value': 'cc-by'},
+                {'name': 'Creative Commons Attribution Share-Alike', 'value': 'cc-by-sa'},
+                {'name': 'Creative Commons CCZero', 'value': 'cc-zero'},
+                {'name': 'Creative Commons Non-Commercial (Any)', 'value': 'cc-nc'},
+                {'name': 'GNU Free Documentation Licence', 'value': 'gfdl'},
+                {'name': 'Licence not specified', 'value': 'notspecified'},
+                {'name': 'Open Data Commons Attribution Licence', 'value': 'odc-by'},
+                {'name': 'Open Data Commons Open Database Licence (ODbL)', 'value': 'odc-odbl'},
+                {'name': 'Open Data Commons Public Domain Dedication and Licence (PDDL)', 'value': 'odc-pddl'},
+                {'name': 'Other (Attribution)', 'value': 'other-at'},
+                {'name': 'Other (Non-Commercial)', 'value': 'other-nc'},
+                {'name': 'Other (Not Open)', 'value': 'other-closed'},
+                {'name': 'Other (Open)', 'value': 'other-open'},
+                {'name': 'Other (Public Domain)', 'value': 'other-pd'},
+                {'name': 'UK Open Government Licence (OGL)', 'value': 'uk-ogl'},
+              ] 
+              %}
+              {% for licence in licences %}
+                <option value="{{licence.value}}" 
+                {% if (licence.value == form_data.license_id) %}
+                  selected
+                {% endif %}
+                >{{licence.name}}</option>
+              {% endfor %}
+            </select>
+            <div class="govuk-warning-text">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text govuk-!-font-size-16 govuk-!-font-weight-regular">
+                {{_("Licence definitions and additional information can be found at ")}}<a href="http://opendefinition.org/licenses/" rel="noreferrer noopener" target="_blank" class="govuk-link">{{_("opendefinition.org opens in a new tab")}}</a>
+              </strong>
+            </div>
+          </div>
+    
+          <div class="govuk-form-group">
+            <label 
+              class="govuk-label" 
+              for="field-version"
+            >
+            <h4 class="govuk-heading-s"> 
+              {{_("Version number (optional)")}}
+            </h4>
+            </label>
+            <input
+              class="govuk-input"
+              id="field-version"
+              name="version"
+              type="text"
+              value="{{form_data.version}}"
+            />
+          </div>
+        </fieldset>
+    
+        <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+    
+        <fieldset class="govuk-fieldset govuk-!-margin-bottom-6" id="contact-details-section">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <h1 class="govuk-fieldset__heading" id="contact-details">
+              {{_("Contact details")}}
+            </h1>
+          </legend>
+          <div id="field-contact-hint" class="govuk-hint">
+            {{_("If you would like people to get in contact with you about your dataset, please provide the contact details of the person in charge of your dataset.")}}
+          </div>
+    
+          <div class="govuk-form-group">
+            <label 
+              class="govuk-label" 
+              for="field-author"
+            >
+            <h4 class="govuk-heading-s"> {{_("Contact name")}}
+              <span
+                {% if form_data.data_available == "no" %}
+                  style="visibility: hidden"
+                {% endif %}
+              >{{_("(optional)")}}</span>
+            </h4>
+            </label>
+            {% set error_class = 'govuk-input--error' if 'Author' in error_summary else '' %}
+            <span id="author-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{error_summary['Author']}}
+            </span>
+            <input
+              class="govuk-input {{error_class}}"
+              id="field-author"
+              name="author"
+              type="text"
+              value="{{form_data.author}}"
+            />
+          </div>
+          <div class="govuk-form-group">
+            <label 
+              class="govuk-label" 
+              for="field-author-email"
+            >
+            <h4 class="govuk-heading-s"> {{_("Contact email")}}
+              <span
+                {% if form_data.data_available == "no" %}
+                  style="visibility: hidden"
+                {% endif %}
+              >{{_("(optional)")}}</span>
+            </h4>
+            </label>
+            {% set error_class = 'govuk-input--error' if 'Author email' in error_summary else '' %}
+            <span id="author-email-error" class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{error_summary['Author email']}}
+            </span>
+    
+            <input
+              class="govuk-input {{error_class}}"
+              id="field-author-email"
+              name="author_email"
+              type="text"
+              value="{{form_data.author_email}}"
+            />
+          </div>
+        </fieldset>
+        <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
+        {% block next_button %}
+        <button 
+          class="govuk-button" 
+          data-module="govuk-button" 
+          type="submit"
         >
-          {{_("Summary (optional)")}}
-        </label>
-        <div id="field-notes-hint" class="govuk-hint">
-          {{_("Optionally provide a short summary of this dataset that explains what it
-          covers, how it can be used and any other important information
-          about it.")}}
-        </div>
-        {% set error_class = 'govuk-input--error' if 'Notes' in error_summary else '' %}
-        <span id="notes-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Notes']}}
-        </span>
-        <textarea
-          class="govuk-textarea {{error_class}}"
-          id="field-notes"
-          name="notes"
-          rows="5"
-          aria-describedby="field-notes-hint">{{form_data.notes}}</textarea>
-      </div>
-
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label" 
-          for="field-data-formats"
-        >
-          {{_("What format(s) is this dataset in? (optional)")}}
-        </label>
-        <div id="field-data-formats-hint" class="govuk-hint">
-          {{_("List the format(s) this dataset is available in, separated by commas e.g. csv, xml, json, xlsx")}}
-        </div>
-        <input 
-          class="govuk-input" 
-          id="field-data-formats" 
-          name="data_formats" 
-          type="text"
-          value="{{form_data.data_formats}}"
-        />
-      </div> 
-
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label" 
-          for="field-license"
-        >
-          {{_("Licence (optional)")}}
-        </label>
-        <select 
-          class="govuk-select" 
-          id="field-license" 
-          name="license_id" 
-        >
-          <option value="" >{{_("Please select the licence")}}</option>
-          {% set licences = [
-            {'name': 'Creative Commons Attribution', 'value': 'cc-by'},
-            {'name': 'Creative Commons Attribution Share-Alike', 'value': 'cc-by-sa'},
-            {'name': 'Creative Commons CCZero', 'value': 'cc-zero'},
-            {'name': 'Creative Commons Non-Commercial (Any)', 'value': 'cc-nc'},
-            {'name': 'GNU Free Documentation Licence', 'value': 'gfdl'},
-            {'name': 'Licence not specified', 'value': 'notspecified'},
-            {'name': 'Open Data Commons Attribution Licence', 'value': 'odc-by'},
-            {'name': 'Open Data Commons Open Database Licence (ODbL)', 'value': 'odc-odbl'},
-            {'name': 'Open Data Commons Public Domain Dedication and Licence (PDDL)', 'value': 'odc-pddl'},
-            {'name': 'Other (Attribution)', 'value': 'other-at'},
-            {'name': 'Other (Non-Commercial)', 'value': 'other-nc'},
-            {'name': 'Other (Not Open)', 'value': 'other-closed'},
-            {'name': 'Other (Open)', 'value': 'other-open'},
-            {'name': 'Other (Public Domain)', 'value': 'other-pd'},
-            {'name': 'UK Open Government Licence (OGL)', 'value': 'uk-ogl'},
-          ] 
-          %}
-          {% for licence in licences %}
-            <option value="{{licence.value}}" 
-            {% if (licence.value == form_data.license_id) %}
-              selected
-            {% endif %}
-            >{{licence.name}}</option>
-          {% endfor %}
-        </select>
-        <div class="govuk-warning-text">
-          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-          <strong class="govuk-warning-text__text govuk-!-font-size-16 govuk-!-font-weight-regular">
-            {{_("Licence definitions and additional information can be found at ")}}<a href="http://opendefinition.org/licenses/" rel="noreferrer noopener" target="_blank" class="govuk-link">{{_("opendefinition.org opens in a new tab")}}</a>
-          </strong>
-        </div>
-      </div>
-
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label" 
-          for="field-version"
-        >
-          {{_("Version number (optional)")}}
-        </label>
-        <input
-          class="govuk-input"
-          id="field-version"
-          name="version"
-          type="text"
-          value="{{form_data.version}}"
-        />
-      </div>
-    </fieldset>
-
-    <hr class="govuk-section-break govuk-section-break--xl govuk-section-break--visible">
-
-    <fieldset class="govuk-fieldset govuk-!-margin-bottom-6" id="contact-details-section">
-      <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-        <h2 class="govuk-fieldset__heading">{{_("Contact details")}}</h2>
-      </legend>
-      <p class="govuk-body govuk-!-margin-bottom-6">
-        {{_("If you would like people to get in contact with you about your dataset, please provide your details below.")}}
-      </p>
-
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label" 
-          for="field-author"
-        >
-          {{_("Contact name")}} 
-          <span
-            {% if form_data.data_available == "no" %}
-              style="visibility: hidden"
-            {% endif %}
-          >{{_("(optional)")}}</span>
-        </label>
-        {% set error_class = 'govuk-input--error' if 'Author' in error_summary else '' %}
-        <span id="author-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Author']}}
-        </span>
-        <input
-          class="govuk-input {{error_class}}"
-          id="field-author"
-          name="author"
-          type="text"
-          value="{{form_data.author}}"
-        />
-      </div>
-      <div class="govuk-form-group">
-        <label 
-          class="govuk-label" 
-          for="field-author-email"
-        >
-          {{_("Contact email")}} 
-          <span
-            {% if form_data.data_available == "no" %}
-              style="visibility: hidden"
-            {% endif %}
-          >{{_("(optional)")}}</span>
-        </label>
-        {% set error_class = 'govuk-input--error' if 'Author email' in error_summary else '' %}
-        <span id="author-email-error" class="govuk-error-message">
-          <span class="govuk-visually-hidden">Error:</span> {{error_summary['Author email']}}
-        </span>
-
-        <input
-          class="govuk-input {{error_class}}"
-          id="field-author-email"
-          name="author_email"
-          type="text"
-          value="{{form_data.author_email}}"
-        />
-      </div>
-    </fieldset>
-    {% block next_button %}
-    <button 
-      class="govuk-button" 
-      data-module="govuk-button" 
-      type="submit"
-    >
-      {{_("Save & Finish") }}
-    </button>
-    {% endblock %}
-  </form>
+          {{_("Publish metadata entry") }}
+        </button>
+        {% endblock %}
+      </form>
+    </div>
+  </div>
 </div>

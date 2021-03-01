@@ -9,6 +9,7 @@ from flask import Blueprint
 from ckan import logic
 from urllib.request import urlopen, URLError
 from flask.templating import render_template
+from datetime import date
 
 Invalid = df.Invalid
 
@@ -30,7 +31,7 @@ def get_extra(package_extras, key):
     return None
     
 def get_orgs():
-    orgs = logic.get_action('organization_list')({}, {'all_fields': 'true'})
+    orgs = logic.get_action('organization_list')({}, {'all_fields': 'true','include_dataset_count': 'false'})
     return orgs
 
 def get_tags():
@@ -268,10 +269,32 @@ def custom_topics_validator(key, data, errors, context):
         raise Invalid(_('6|Enter what topics this dataset relates to'))
     return value
 
+def custom_date_range_start_converter(key, data, errors, context):
+    start_date = ""
+    regularly_updated = data.get(('regularly_updated',))
+    if (regularly_updated == "no"):
+        start_date = datetime.date(int(data.get(('date_range_earliest_year',))), int(data.get(('date_range_earliest_month',))), int(data.get(('date_range_earliest_day',)))).strftime("%Y-%m-%d %H:%M:%S")
+    elif (regularly_updated == "yes"):
+        earliest_year = data.get(('regularly_updated_earliest_year',))
+        earliest_month = data.get(('regularly_updated_earliest_month',))
+        earliest_day = data.get(('regularly_updated_earliest_day',))
+        if (earliest_year and earliest_month and earliest_day):
+            start_date = datetime.date(int(earliest_year), int(earliest_month), int(earliest_day)).strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            start_date = datetime.date(1900, 1, 1).strftime("%Y-%m-%d %H:%M:%S")
+    data.update({('start_date',): start_date})
+
+def custom_date_range_end_converter(key, data, errors, context):
+    end_date = ""
+    regularly_updated = data.get(('regularly_updated',))
+    if (regularly_updated == "no"):
+        end_date = datetime.date(int(data.get(('date_range_latest_year',))), int(data.get(('date_range_latest_month',))), int(data.get(('date_range_latest_day',)))).strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        end_date = datetime.date.max.strftime("%Y-%m-%d %H:%M:%S")
+    data.update({('end_date',): end_date})
+
 def _create_tag_vocabulary(vocab_name, tags):
     user = toolkit.get_action('get_site_user')({'ignore_auth': True}, {})
-    name=user['name']
-    print(f'user=[{user}] user name={name}')
     context = {'user': user['name']}
     try:
         data = {'id': vocab_name }
@@ -365,8 +388,7 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_public_directory(config_, 'fanstatic')
-        toolkit.add_resource('fanstatic',
-            'nap_theme')
+        toolkit.add_resource('fanstatic', 'nap_theme')
 
     # ITemplateHelpers 
     def get_helpers(self):
@@ -393,25 +415,44 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         blueprint.add_url_rule('/cookies', view_func=cookies)
         return blueprint
 
+    def _create_search_param_dict(self, filter_query):
+        from collections import defaultdict
+        # fix issue with spaces in params such as tags we need to differentiate spaces between search terms and spaces
+        filter_query = filter_query.replace('" ','"|||')
+        filter_params = filter_query.split('|||')
+        filter_dict = list(s.split(':') for s in filter_params)
+        new_dict = defaultdict(list)
+        for (key, value) in filter_dict:
+            new_dict[key].append(value)
+        return new_dict
+
     # IPackageController
     def before_search(self, search_params):
-        def make_filters_or(filter_query):
-            from collections import defaultdict
-            # fix issue with spaces in params such as tags we need to differentiate spaces between search terms and spaces
-            filter_query = filter_query.replace('" ','"|||')
-            filter_params = filter_query.split('|||')
-            d = list(s.split(':') for s in filter_params)
-            new_dict = defaultdict(list)
-            for (key, value) in d:
-                new_dict[key].append(value)
+        def make_filters_or(filter_dict):
             filter_string = ""
-            for (key, value) in new_dict.items():
+            for (key, value) in filter_dict.items():
                 string = f'{key}:({" OR ".join(value)})'
                 filter_string = filter_string + " " + string
             return filter_string
-
+    
         if (search_params.get('fq', None) and not '+owner_org' in search_params['fq']):
-            search_params["fq"] = make_filters_or(search_params['fq'])
+            fq = make_filters_or(self._create_search_param_dict(search_params['fq']))
+            search_params["fq"] = fq
+        
+        extras = search_params.get('extras')
+        start_date = extras.get('ext_startdate')
+        end_date = extras.get('ext_enddate')
+        if not start_date or not end_date:
+            return search_params
+        
+        start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').strftime("%Y-%m-%dT%H:%M:%SZ")
+        end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        fq = search_params["fq"]
+        fq = '{fq} (start_date:[* TO {end_date}] AND end_date:[{start_date} TO *])'.format(
+        fq=fq, start_date=start_date, end_date=end_date)
+        search_params["fq"] = fq
+
         return search_params
 
     # Schema Changes
@@ -441,7 +482,7 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
         schema.update({
             'url':[custom_url_validator,
                 toolkit.get_converter('unicode_safe')],
-            'title':[custom_title_validator,
+            'title':[custom_description_validator,
                 toolkit.get_converter('unicode_safe')],
             'author_email':[toolkit.get_validator('ignore_missing'),
                 toolkit.get_converter('unicode_safe'),
@@ -481,8 +522,6 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
                 toolkit.get_converter('convert_to_extras')],
             'regularly_updated_earliest_year':[toolkit.get_validator('ignore_missing'),
                 toolkit.get_converter('convert_to_extras')],
-            'description':[custom_description_validator,
-            toolkit.get_converter('convert_to_extras')],
             'data_available':[custom_data_available_validator,
                 toolkit.get_converter('convert_to_extras')],
             'topics':[custom_topics_validator,
@@ -491,7 +530,11 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'transport_modes':[toolkit.get_validator('ignore_missing'),
                     toolkit.get_converter('convert_to_tags')('nap_transport_modes')],
             'road_networks':[toolkit.get_validator('ignore_missing'),
-                    toolkit.get_converter('convert_to_tags')('nap_road_networks')]
+                    toolkit.get_converter('convert_to_tags')('nap_road_networks')],
+            'start_date':[custom_date_range_start_converter,
+                    toolkit.get_converter('convert_to_extras')],
+            'end_date':[custom_date_range_end_converter,
+                    toolkit.get_converter('convert_to_extras')]
         })
         return schema
 
@@ -502,7 +545,7 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'url':[toolkit.get_converter('unicode_safe'),
                 custom_url_validator],
             'title':[toolkit.get_converter('unicode_safe'),
-                custom_title_validator],
+                custom_description_validator],
             'author_email':[toolkit.get_converter('unicode_safe'),
                 toolkit.get_validator('ignore_missing'),
                 custom_author_email_validator,
@@ -548,8 +591,6 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'regularly_updated_earliest_year':[toolkit.get_converter('unicode_safe'),
                 toolkit.get_validator('ignore_missing'),
                 toolkit.get_converter('convert_from_extras')],
-            'description':[custom_description_validator, 
-                    toolkit.get_converter('convert_from_extras')],
             'data_available':[custom_data_available_validator,
                     toolkit.get_converter('unicode_safe'),
                     toolkit.get_converter('convert_from_extras')],
@@ -559,7 +600,9 @@ class NapThemePlugin(plugins.SingletonPlugin, toolkit.DefaultDatasetForm):
             'transport_modes':[ toolkit.get_converter('convert_from_tags')('nap_transport_modes'),
                     toolkit.get_validator('ignore_missing')],
             'road_networks':[toolkit.get_converter('convert_from_tags')('nap_road_networks'),
-                    toolkit.get_validator('ignore_missing')]
+                    toolkit.get_validator('ignore_missing')],
+            'start_date':[toolkit.get_converter('convert_from_extras')],
+            'end_date':[toolkit.get_converter('convert_from_extras')]
         })
         return schema  
     
