@@ -1,42 +1,42 @@
 govuk_js:
-  output: ckanext-nap_theme/%(version)s_govuk.js
+  output: nap_theme/%(version)s_govuk.js
   contents:
     - govuk-frontend-3.9.1.min.js
 govuk_css:
   filters: cssrewrite
-  output: ckanext-nap_theme/%(version)s_govuk.css
+  output: nap_theme/%(version)s_govuk.css
   contents:
     - govuk-frontend-3.9.1.min.css
 nap_js:
-  output: ckanext-nap_theme/%(version)s_nap_js.js
+  output: nap_theme/%(version)s_nap_js.js
   contents:
     - custom.js
 nap_css:
   filters: cssrewrite
-  output: ckanext-nap_theme/%(version)s_nap.css
+  output: nap_theme/%(version)s_nap.css
   contents:
     - govuk-notify-cookie.css
     - ckanstyleoverride.css
     - custom.css
 summary_expander_js:
-  output: ckanext-nap_theme/%(version)s_summary_expander.js
+  output: nap_theme/%(version)s_summary_expander.js
   contents:
     - summary.js
 search_filter_js:
-  output: ckanext-nap_theme/%(version)s_search_filter.js
+  output: nap_theme/%(version)s_search_filter.js
   contents:
     - search-filter.js
 search_css:
   filters: cssrewrite
-  output: ckanext-nap_theme/%(version)s_search.css
+  output: nap_theme/%(version)s_search.css
   contents:
     - search.css
 custom_css:
   filters: cssrewrite
-  output: ckanext-nap_theme/%(version)s_custom.css
+  output: nap_theme/%(version)s_custom.css
   contents:
     - custom.css
 availability_contact_details_js:
-  output: ckanext-nap_theme/%(version)s_availability_contact_details.js
+  output: nap_theme/%(version)s_availability_contact_details.js
   contents:
     - contact-details.js
